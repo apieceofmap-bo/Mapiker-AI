@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Product } from "@/lib/types";
 import { TEST_PERIODS } from "@/lib/qualityEvaluationOptions";
-import { getVendorColor } from "@/lib/pricingData";
+import { getVendorColor } from "@/lib/vendorColors";
 
 interface TestKeysRequestProps {
   selectedProducts: Product[];

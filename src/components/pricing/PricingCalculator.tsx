@@ -1,28 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Product } from "@/lib/types";
-import {
-  calculateProductCost,
-  getProductPricing,
-  estimateProductPricing,
-  getVendorColor,
-  ProductPricingInfo,
-} from "@/lib/pricingData";
-
-interface ProductCostEstimate {
-  product: Product;
-  pricing: ProductPricingInfo;
-  monthlyCost: number;
-  freeQuota: number;
-  billableRequests: number;
-}
+import { calculatePricing, ProductCost, BulkPricingResponse } from "@/lib/api";
+import { getVendorColor } from "@/lib/vendorColors";
 
 interface VendorSummary {
   vendor: string;
-  products: ProductCostEstimate[];
+  products: ProductCost[];
   subtotal: number;
   productCount: number;
+  hasContactSales: boolean;
+  hasPricingUnavailable: boolean;
 }
 
 interface PricingCalculatorProps {
@@ -45,54 +34,67 @@ export default function PricingCalculator({
   const [monthlyRequests, setMonthlyRequests] = useState(100000);
   const [customRequests, setCustomRequests] = useState("");
   const [activePreset, setActivePreset] = useState<number | null>(100000);
+  const [pricingData, setPricingData] = useState<BulkPricingResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Calculate costs for all products
-  const productCosts = useMemo<ProductCostEstimate[]>(() => {
-    return selectedProducts.map((product) => {
-      // Try to get actual pricing, fallback to estimate
-      let pricing = getProductPricing(product.id);
-      if (!pricing) {
-        pricing = estimateProductPricing(product.product_name, product.provider);
-      }
+  // Debounced API call
+  const fetchPricing = useCallback(async (productIds: string[], requests: number) => {
+    if (productIds.length === 0) {
+      setPricingData(null);
+      return;
+    }
 
-      const freeQuota = pricing.freeMonthlyQuota || 0;
-      const billableRequests = Math.max(0, monthlyRequests - freeQuota);
-      const monthlyCost = calculateProductCost(pricing, monthlyRequests);
+    setLoading(true);
+    setError(null);
 
-      return {
-        product,
-        pricing,
-        monthlyCost,
-        freeQuota,
-        billableRequests,
-      };
-    });
-  }, [selectedProducts, monthlyRequests]);
+    try {
+      const response = await calculatePricing(productIds, requests);
+      setPricingData(response);
+    } catch (err) {
+      console.error("Failed to calculate pricing:", err);
+      setError(err instanceof Error ? err.message : "Failed to calculate pricing");
+      setPricingData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // Group by vendor
-  const vendorSummaries = useMemo<VendorSummary[]>(() => {
-    const vendorMap = new Map<string, ProductCostEstimate[]>();
+  // Fetch pricing when products or monthly requests change
+  useEffect(() => {
+    const productIds = selectedProducts.map((p) => p.id);
+    const timeoutId = setTimeout(() => {
+      fetchPricing(productIds, monthlyRequests);
+    }, 300); // Debounce 300ms
 
-    productCosts.forEach((cost) => {
-      const vendor = cost.product.provider;
-      if (!vendorMap.has(vendor)) {
-        vendorMap.set(vendor, []);
-      }
-      vendorMap.get(vendor)!.push(cost);
-    });
+    return () => clearTimeout(timeoutId);
+  }, [selectedProducts, monthlyRequests, fetchPricing]);
 
-    return Array.from(vendorMap.entries()).map(([vendor, products]) => ({
-      vendor,
-      products,
-      subtotal: products.reduce((sum, p) => sum + p.monthlyCost, 0),
-      productCount: products.length,
-    }));
-  }, [productCosts]);
+  // Group products by vendor
+  const vendorSummaries: VendorSummary[] = pricingData
+    ? (() => {
+        const vendorMap = new Map<string, ProductCost[]>();
 
-  // Total cost
-  const totalMonthlyCost = useMemo(() => {
-    return vendorSummaries.reduce((sum, v) => sum + v.subtotal, 0);
-  }, [vendorSummaries]);
+        // Find vendor for each product from selectedProducts
+        pricingData.products.forEach((cost) => {
+          const product = selectedProducts.find((p) => p.id === cost.product_id);
+          const vendor = product?.provider || "Unknown";
+          if (!vendorMap.has(vendor)) {
+            vendorMap.set(vendor, []);
+          }
+          vendorMap.get(vendor)!.push(cost);
+        });
+
+        return Array.from(vendorMap.entries()).map(([vendor, products]) => ({
+          vendor,
+          products,
+          subtotal: products.reduce((sum, p) => sum + p.estimated_cost, 0),
+          productCount: products.length,
+          hasContactSales: products.some((p) => p.contact_sales_required),
+          hasPricingUnavailable: products.some((p) => p.pricing_unavailable),
+        }));
+      })()
+    : [];
 
   const handlePresetClick = (value: number) => {
     setMonthlyRequests(value);
@@ -121,10 +123,24 @@ export default function PricingCalculator({
     }).format(amount);
   };
 
+  const getBillingUnitLabel = (unit: string) => {
+    const labels: Record<string, string> = {
+      request: "Per request",
+      MAU: "Per MAU",
+      trip: "Per trip",
+      session: "Per session",
+      element: "Per element",
+      load: "Per load",
+      "MAU+trip": "Per MAU + trip",
+      order: "Per order",
+    };
+    return labels[unit] || `Per ${unit}`;
+  };
+
   if (selectedProducts.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-[#e9e9e7] p-8 text-center">
-        <div className="text-4xl mb-4">💰</div>
+        <div className="text-4xl mb-4">&#x1F4B0;</div>
         <h3 className="text-lg font-semibold text-[#37352f] mb-2">
           No products selected
         </h3>
@@ -179,118 +195,166 @@ export default function PricingCalculator({
 
         <div className="mt-4 p-3 bg-[#f7f6f3] rounded-md">
           <div className="text-sm text-[#787774]">
-            Calculating for: <span className="font-semibold text-[#37352f]">{formatNumber(monthlyRequests)}</span> requests per product per month
+            Calculating for:{" "}
+            <span className="font-semibold text-[#37352f]">
+              {formatNumber(monthlyRequests)}
+            </span>{" "}
+            requests per product per month
           </div>
         </div>
       </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white rounded-lg border border-[#e9e9e7] p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f] mx-auto mb-4"></div>
+          <p className="text-[#787774]">Calculating pricing...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !loading && (
+        <div className="bg-[rgba(224,62,62,0.08)] border border-[rgba(224,62,62,0.2)] rounded-md p-4">
+          <p className="text-[#e03e3e] text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Vendor Breakdown */}
-      <div className="space-y-4">
-        {vendorSummaries.map((vendor) => {
-          const colors = getVendorColor(vendor.vendor);
-          return (
-            <div
-              key={vendor.vendor}
-              className={`bg-white rounded-xl border ${colors.border} overflow-hidden`}
-            >
-              {/* Vendor Header */}
-              <div className={`px-6 py-4 ${colors.bg} border-b ${colors.border}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className={`font-semibold ${colors.text}`}>
-                      {vendor.vendor}
-                    </h4>
-                    <p className="text-sm text-gray-500">
-                      {vendor.productCount} product{vendor.productCount !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-2xl font-bold ${colors.text}`}>
-                      {formatCurrency(vendor.subtotal)}
+      {!loading && pricingData && (
+        <>
+          <div className="space-y-4">
+            {vendorSummaries.map((vendor) => {
+              const colors = getVendorColor(vendor.vendor);
+              return (
+                <div
+                  key={vendor.vendor}
+                  className={`bg-white rounded-xl border ${colors.border} overflow-hidden`}
+                >
+                  {/* Vendor Header */}
+                  <div className={`px-6 py-4 ${colors.bg} border-b ${colors.border}`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className={`font-semibold ${colors.text}`}>
+                          {vendor.vendor}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          {vendor.productCount} product
+                          {vendor.productCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-2xl font-bold ${colors.text}`}>
+                          {vendor.hasContactSales && vendor.subtotal === 0
+                            ? "Contact Sales"
+                            : formatCurrency(vendor.subtotal)}
+                        </div>
+                        <div className="text-sm text-gray-500">/month</div>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">/month</div>
+                  </div>
+
+                  {/* Products */}
+                  <div className="divide-y divide-[#e9e9e7]">
+                    {vendor.products.map((cost) => (
+                      <div
+                        key={cost.product_id}
+                        className="px-6 py-4 flex items-center justify-between"
+                      >
+                        <div className="flex-1">
+                          <div className="font-medium text-[#37352f]">
+                            {cost.product_name}
+                          </div>
+                          <div className="text-sm text-[#787774]">
+                            {getBillingUnitLabel(cost.billing_unit)}
+                            {cost.free_tier_applied && (
+                              <span className="ml-2 text-[#0f7b6c]">
+                                &#x2713; Free tier applied
+                              </span>
+                            )}
+                          </div>
+                          {cost.pricing_note && (
+                            <div className="text-xs text-[#b8860b] mt-1">
+                              {cost.pricing_note}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {cost.contact_sales_required ? (
+                            <div className="text-sm font-medium text-[#9b59b6]">
+                              Contact Sales
+                            </div>
+                          ) : cost.pricing_unavailable ? (
+                            <div className="text-sm font-medium text-[#787774]">
+                              Price N/A
+                            </div>
+                          ) : (
+                            <>
+                              <div className="font-semibold text-[#37352f]">
+                                {formatCurrency(cost.estimated_cost)}
+                              </div>
+                              {cost.monthly_usage !== cost.original_requests && (
+                                <div className="text-xs text-[#787774]">
+                                  {formatNumber(cost.monthly_usage)} {cost.billing_unit}s
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              );
+            })}
+          </div>
 
-              {/* Products */}
-              <div className="divide-y divide-[#e9e9e7]">
-                {vendor.products.map((cost) => (
-                  <div
-                    key={cost.product.id}
-                    className="px-6 py-4 flex items-center justify-between"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-[#37352f]">
-                        {cost.product.product_name}
-                      </div>
-                      <div className="text-sm text-[#787774]">
-                        {cost.pricing.pricingModel === "per-request" && "Per request pricing"}
-                        {cost.pricing.pricingModel === "per-session" && "Per session pricing"}
-                        {cost.pricing.pricingModel === "per-asset" && "Per asset pricing"}
-                        {cost.freeQuota > 0 && (
-                          <span className="ml-2 text-[#0f7b6c]">
-                            • {formatNumber(cost.freeQuota)} free/month
-                          </span>
-                        )}
-                      </div>
-                      {cost.pricing.notes && (
-                        <div className="text-xs text-[#b8860b] mt-1">
-                          {cost.pricing.notes}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[#37352f]">
-                        {formatCurrency(cost.monthlyCost)}
-                      </div>
-                      {cost.freeQuota > 0 && cost.billableRequests > 0 && (
-                        <div className="text-xs text-[#787774]">
-                          {formatNumber(cost.billableRequests)} billable
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+          {/* Total Summary */}
+          <div className="bg-[#37352f] rounded-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold opacity-90">
+                  Estimated Total Monthly Cost
+                </h3>
+                <p className="text-sm opacity-75">
+                  Based on {formatNumber(monthlyRequests)} requests/product/month
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-4xl font-bold">
+                  {formatCurrency(pricingData.total_cost)}
+                </div>
+                <div className="text-sm opacity-75">/month</div>
               </div>
             </div>
-          );
-        })}
-      </div>
 
-      {/* Total Summary */}
-      <div className="bg-[#37352f] rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold opacity-90">
-              Estimated Total Monthly Cost
-            </h3>
-            <p className="text-sm opacity-75">
-              Based on {formatNumber(monthlyRequests)} requests/product/month
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-4xl font-bold">
-              {formatCurrency(totalMonthlyCost)}
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <div className="flex items-center justify-between text-sm">
+                <span className="opacity-75">Estimated Annual Cost</span>
+                <span className="font-semibold">
+                  {formatCurrency(pricingData.total_cost * 12)}
+                </span>
+              </div>
             </div>
-            <div className="text-sm opacity-75">/month</div>
-          </div>
-        </div>
 
-        <div className="mt-4 pt-4 border-t border-white/20">
-          <div className="flex items-center justify-between text-sm">
-            <span className="opacity-75">Estimated Annual Cost</span>
-            <span className="font-semibold">
-              {formatCurrency(totalMonthlyCost * 12)}
-            </span>
+            {/* Contact Sales Warning */}
+            {pricingData.has_contact_sales && (
+              <div className="mt-4 pt-4 border-t border-white/20">
+                <div className="flex items-center gap-2 text-sm text-yellow-300">
+                  <span>&#x26A0;</span>
+                  <span>
+                    Some products require contacting sales for pricing
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Disclaimer */}
       <div className="bg-[rgba(223,171,1,0.08)] border border-[rgba(223,171,1,0.2)] rounded-md p-4">
         <div className="flex gap-3">
-          <span className="text-[#b8860b] text-xl">⚠️</span>
+          <span className="text-[#b8860b] text-xl">&#x26A0;&#xFE0F;</span>
           <div>
             <h4 className="font-medium text-[#b8860b]">Pricing Disclaimer</h4>
             <p className="text-sm text-[#b8860b] mt-1">
@@ -307,10 +371,11 @@ export default function PricingCalculator({
         <div className="flex justify-end">
           <button
             onClick={onContinue}
-            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2"
+            disabled={loading}
+            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue to Quality Evaluation
-            <span>→</span>
+            <span>&#x2192;</span>
           </button>
         </div>
       )}

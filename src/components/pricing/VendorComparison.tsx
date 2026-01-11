@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Product, Category } from "@/lib/types";
-import {
-  calculateProductCost,
-  getProductPricing,
-  estimateProductPricing,
-  getVendorColor,
-} from "@/lib/pricingData";
+import { calculatePricing, ProductCost } from "@/lib/api";
+import { getVendorColor } from "@/lib/vendorColors";
 
 interface VendorComparisonProps {
   categories: Category[];
@@ -20,13 +16,18 @@ interface VendorCategoryData {
   categoryName: string;
   product: Product | null;
   monthlyCost: number | null;
-  freeQuota: number;
+  freeQuota: boolean;
+  contactSales: boolean;
 }
 
 export default function VendorComparison({
   categories,
   monthlyRequests,
 }: VendorComparisonProps) {
+  const [pricingMap, setPricingMap] = useState<Map<string, ProductCost>>(new Map());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   // Get all unique vendors
   const vendors = useMemo(() => {
     const vendorSet = new Set<string>();
@@ -35,6 +36,49 @@ export default function VendorComparison({
     });
     return Array.from(vendorSet).sort();
   }, [categories]);
+
+  // Get all product IDs
+  const allProductIds = useMemo(() => {
+    const ids: string[] = [];
+    categories.forEach((cat) => {
+      cat.products.forEach((p) => ids.push(p.id));
+    });
+    return ids;
+  }, [categories]);
+
+  // Fetch pricing data from backend
+  const fetchPricing = useCallback(async (productIds: string[], requests: number) => {
+    if (productIds.length === 0) {
+      setPricingMap(new Map());
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await calculatePricing(productIds, requests);
+      const newMap = new Map<string, ProductCost>();
+      response.products.forEach((p) => {
+        newMap.set(p.product_id, p);
+      });
+      setPricingMap(newMap);
+    } catch (err) {
+      console.error("Failed to fetch pricing:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch pricing");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch pricing when products or monthly requests change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchPricing(allProductIds, monthlyRequests);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [allProductIds, monthlyRequests, fetchPricing]);
 
   // Build comparison matrix
   const comparisonData = useMemo(() => {
@@ -46,21 +90,16 @@ export default function VendorComparison({
         const product = category.products.find((p) => p.provider === vendor);
 
         if (product) {
-          let pricing = getProductPricing(product.id);
-          if (!pricing) {
-            pricing = estimateProductPricing(product.product_name, product.provider);
-          }
-
-          const freeQuota = pricing.freeMonthlyQuota || 0;
-          const monthlyCost = calculateProductCost(pricing, monthlyRequests);
+          const pricing = pricingMap.get(product.id);
 
           vendorProducts[vendor] = {
             vendor,
             categoryId: category.id,
             categoryName: category.name,
             product,
-            monthlyCost,
-            freeQuota,
+            monthlyCost: pricing?.estimated_cost ?? null,
+            freeQuota: pricing?.free_tier_applied ?? false,
+            contactSales: pricing?.contact_sales_required ?? false,
           };
         } else {
           vendorProducts[vendor] = {
@@ -69,7 +108,8 @@ export default function VendorComparison({
             categoryName: category.name,
             product: null,
             monthlyCost: null,
-            freeQuota: 0,
+            freeQuota: false,
+            contactSales: false,
           };
         }
       });
@@ -79,7 +119,7 @@ export default function VendorComparison({
         vendorProducts,
       };
     });
-  }, [categories, vendors, monthlyRequests]);
+  }, [categories, vendors, pricingMap]);
 
   // Calculate vendor totals
   const vendorTotals = useMemo(() => {
@@ -91,7 +131,7 @@ export default function VendorComparison({
     comparisonData.forEach((row) => {
       vendors.forEach((vendor) => {
         const data = row.vendorProducts[vendor];
-        if (data?.monthlyCost !== null) {
+        if (data?.monthlyCost !== null && !data?.contactSales) {
           totals[vendor] += data.monthlyCost;
         }
       });
@@ -127,6 +167,23 @@ export default function VendorComparison({
     if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
     return num.toString();
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-8 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f] mx-auto mb-4"></div>
+        <p className="text-[#787774]">Loading pricing comparison...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-[rgba(224,62,62,0.08)] border border-[rgba(224,62,62,0.2)] rounded-md p-4">
+        <p className="text-[#e03e3e] text-sm">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg border border-[#e9e9e7] overflow-hidden">
@@ -172,8 +229,9 @@ export default function VendorComparison({
               // Find lowest cost for this category
               let lowestCost = Infinity;
               vendors.forEach((vendor) => {
-                const cost = row.vendorProducts[vendor]?.monthlyCost;
-                if (cost !== null && cost < lowestCost) {
+                const data = row.vendorProducts[vendor];
+                const cost = data?.monthlyCost;
+                if (cost !== null && cost < lowestCost && !data.contactSales) {
                   lowestCost = cost;
                 }
               });
@@ -194,7 +252,8 @@ export default function VendorComparison({
                     const isLowest =
                       data?.monthlyCost !== null &&
                       data?.monthlyCost === lowestCost &&
-                      lowestCost < Infinity;
+                      lowestCost < Infinity &&
+                      !data.contactSales;
 
                     if (!data?.product) {
                       return (
@@ -217,16 +276,28 @@ export default function VendorComparison({
                         <div className="text-sm font-medium text-[#37352f]">
                           {data.product.product_name}
                         </div>
-                        <div
-                          className={`text-lg font-semibold ${
-                            isLowest ? "text-[#0f7b6c]" : colors.text
-                          }`}
-                        >
-                          {formatCurrency(data.monthlyCost!)}
-                        </div>
-                        {data.freeQuota > 0 && (
-                          <div className="text-xs text-[#0f7b6c]">
-                            {formatNumber(data.freeQuota)} free
+                        {data.contactSales ? (
+                          <div className="text-sm font-medium text-[#9b59b6]">
+                            Contact Sales
+                          </div>
+                        ) : data.monthlyCost !== null ? (
+                          <>
+                            <div
+                              className={`text-lg font-semibold ${
+                                isLowest ? "text-[#0f7b6c]" : colors.text
+                              }`}
+                            >
+                              {formatCurrency(data.monthlyCost)}
+                            </div>
+                            {data.freeQuota && (
+                              <div className="text-xs text-[#0f7b6c]">
+                                Free tier applied
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-sm text-[#9b9a97]">
+                            Loading...
                           </div>
                         )}
                       </td>
