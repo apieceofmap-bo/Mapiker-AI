@@ -38,10 +38,10 @@ export default function StageIndicator({ currentStage, compact = false, projectI
             <div
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs transition-transform ${
                 stage.id < currentStage
-                  ? 'bg-green-100 text-green-600'
+                  ? 'bg-[rgba(15,123,108,0.15)] text-[#0f7b6c]'
                   : stage.id === currentStage
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'bg-gray-100 text-gray-400'
+                  ? 'bg-[rgba(55,53,47,0.08)] text-[#37352f]'
+                  : 'bg-[#f7f6f3] text-[#9b9a97]'
               } ${clickable ? 'cursor-pointer hover:scale-110' : ''}`}
               title={stage.name}
             >
@@ -59,7 +59,7 @@ export default function StageIndicator({ currentStage, compact = false, projectI
               {index < STAGES.length - 1 && (
                 <div
                   className={`w-4 h-0.5 ${
-                    stage.id < currentStage ? 'bg-green-300' : 'bg-gray-200'
+                    stage.id < currentStage ? 'bg-[#0f7b6c]' : 'bg-[#e9e9e7]'
                   }`}
                 />
               )}
@@ -79,12 +79,12 @@ export default function StageIndicator({ currentStage, compact = false, projectI
         const circleContent = (
           <div className="flex flex-col items-center">
             <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${
+              className={`w-11 h-11 rounded-full flex items-center justify-center text-lg transition-all ${
                 stage.id < currentStage
-                  ? 'bg-green-100 text-green-600 ring-2 ring-green-500'
+                  ? 'bg-[rgba(15,123,108,0.15)] text-[#0f7b6c] ring-2 ring-[#0f7b6c]'
                   : stage.id === currentStage
-                  ? 'bg-blue-100 text-blue-600 ring-2 ring-blue-500'
-                  : 'bg-gray-100 text-gray-400'
+                  ? 'bg-[rgba(55,53,47,0.08)] text-[#37352f] ring-2 ring-[#37352f]'
+                  : 'bg-[#f7f6f3] text-[#9b9a97]'
               } ${clickable ? 'cursor-pointer hover:scale-105 hover:ring-4' : ''}`}
             >
               {stage.id < currentStage ? '✓' : stage.icon}
@@ -93,15 +93,15 @@ export default function StageIndicator({ currentStage, compact = false, projectI
               <p
                 className={`text-sm font-medium ${
                   stage.id === currentStage
-                    ? 'text-blue-600'
+                    ? 'text-[#37352f]'
                     : stage.id < currentStage
-                    ? 'text-green-600'
-                    : 'text-gray-500'
+                    ? 'text-[#0f7b6c]'
+                    : 'text-[#9b9a97]'
                 }`}
               >
                 {stage.name}
               </p>
-              <p className="text-xs text-gray-400 hidden sm:block">
+              <p className="text-xs text-[#9b9a97] hidden sm:block">
                 {stage.id < currentStage
                   ? 'Done'
                   : stage.id === currentStage
@@ -125,7 +125,7 @@ export default function StageIndicator({ currentStage, compact = false, projectI
             {index < STAGES.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-2 ${
-                  stage.id < currentStage ? 'bg-green-300' : 'bg-gray-200'
+                  stage.id < currentStage ? 'bg-[#0f7b6c]' : 'bg-[#e9e9e7]'
                 }`}
               />
             )}

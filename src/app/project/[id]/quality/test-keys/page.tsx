@@ -163,7 +163,7 @@ export default function TestKeysPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
@@ -172,10 +172,10 @@ export default function TestKeysPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -187,12 +187,12 @@ export default function TestKeysPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">🔍</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">
           Project not found
         </h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -204,13 +204,13 @@ export default function TestKeysPage() {
   if (isSuccess) {
     return (
       <div className="max-w-2xl mx-auto text-center py-16">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+        <div className="w-20 h-20 bg-[rgba(15,123,108,0.15)] rounded-full flex items-center justify-center text-4xl text-[#0f7b6c] mx-auto mb-6">
           ✓
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl font-bold text-[#37352f] mb-4">
           Test Keys Request Submitted!
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="text-[#787774] mb-8">
           Thank you for your interest. Our sales team will review your request
           and provide test credentials within 1-2 business days. You&apos;ll receive
           an email with instructions on how to access the test keys.
@@ -218,13 +218,13 @@ export default function TestKeysPage() {
         <div className="flex items-center justify-center gap-4">
           <Link
             href={`/project/${projectId}`}
-            className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#f7f6f3] hover:bg-[#e9e9e7] text-[#37352f] font-medium rounded-md transition-colors"
           >
             Back to Project
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors"
           >
             Go to Dashboard
           </Link>
@@ -237,51 +237,51 @@ export default function TestKeysPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/dashboard" className="hover:text-gray-700">
+        <div className="flex items-center gap-2 text-sm text-[#787774] mb-2">
+          <Link href="/dashboard" className="hover:text-[#37352f]">
             Dashboard
           </Link>
           <span>/</span>
-          <Link href={`/project/${projectId}`} className="hover:text-gray-700">
+          <Link href={`/project/${projectId}`} className="hover:text-[#37352f]">
             {project.name}
           </Link>
           <span>/</span>
           <Link
             href={`/project/${projectId}/quality`}
-            className="hover:text-gray-700"
+            className="hover:text-[#37352f]"
           >
             Quality Evaluation
           </Link>
           <span>/</span>
-          <span className="text-gray-900">Test Keys</span>
+          <span className="text-[#37352f]">Test Keys</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-[#37352f]">
           Request Test API/SDK Keys
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-[#787774] mt-1">
           Get temporary access keys to test the APIs and SDKs yourself
         </p>
       </div>
 
       {/* Stage Indicator */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={4} projectId={projectId} />
       </div>
 
       {/* Main Content */}
       <div className="max-w-2xl">
         {selectedProducts.length === 0 ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+          <div className="bg-[rgba(223,171,1,0.08)] border border-[rgba(223,171,1,0.2)] rounded-md p-6 text-center">
             <div className="text-4xl mb-4">⚠️</div>
-            <h3 className="font-semibold text-amber-800 mb-2">
+            <h3 className="font-semibold text-[#b8860b] mb-2">
               No products selected
             </h3>
-            <p className="text-amber-700 mb-4">
+            <p className="text-[#b8860b] mb-4">
               You need to select products before requesting test keys.
             </p>
             <Link
               href={`/project/${projectId}/products`}
-              className="inline-block px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors"
+              className="inline-block px-4 py-2 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors"
             >
               Select Products
             </Link>
@@ -297,7 +297,7 @@ export default function TestKeysPage() {
         {/* Back Link */}
         <Link
           href={`/project/${projectId}/quality`}
-          className="block text-center text-sm text-gray-500 hover:text-gray-700 mt-6"
+          className="block text-center text-sm text-[#787774] hover:text-[#37352f] mt-6"
         >
           ← Back to options
         </Link>

@@ -129,12 +129,12 @@ export default function VendorComparison({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">
+    <div className="bg-white rounded-lg border border-[#e9e9e7] overflow-hidden">
+      <div className="px-6 py-4 border-b border-[#e9e9e7]">
+        <h3 className="text-lg font-semibold text-[#37352f]">
           Vendor Comparison
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[#787774]">
           Compare pricing across vendors for {formatNumber(monthlyRequests)} requests/month
         </p>
       </div>
@@ -142,8 +142,8 @@ export default function VendorComparison({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-50">
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
+            <tr className="bg-[#f7f6f3]">
+              <th className="px-6 py-3 text-left text-sm font-medium text-[#787774]">
                 Category
               </th>
               {vendors.map((vendor) => {
@@ -157,7 +157,7 @@ export default function VendorComparison({
                     <div className="flex items-center justify-center gap-2">
                       {vendor}
                       {isLowest && (
-                        <span className="px-1.5 py-0.5 text-xs bg-green-500 text-white rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-[#0f7b6c] text-white rounded">
                           Lowest
                         </span>
                       )}
@@ -167,7 +167,7 @@ export default function VendorComparison({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-[#e9e9e7]">
             {comparisonData.map((row) => {
               // Find lowest cost for this category
               let lowestCost = Infinity;
@@ -179,13 +179,13 @@ export default function VendorComparison({
               });
 
               return (
-                <tr key={row.category.id} className="hover:bg-gray-50">
+                <tr key={row.category.id} className="hover:bg-[#f7f6f3]">
                   <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">
+                    <div className="font-medium text-[#37352f]">
                       {row.category.name}
                     </div>
                     {row.category.required && (
-                      <span className="text-xs text-red-600">Required</span>
+                      <span className="text-xs text-[#e03e3e]">Required</span>
                     )}
                   </td>
                   {vendors.map((vendor) => {
@@ -200,7 +200,7 @@ export default function VendorComparison({
                       return (
                         <td
                           key={vendor}
-                          className="px-4 py-4 text-center text-gray-400"
+                          className="px-4 py-4 text-center text-[#9b9a97]"
                         >
                           <span className="text-sm">N/A</span>
                         </td>
@@ -211,21 +211,21 @@ export default function VendorComparison({
                       <td
                         key={vendor}
                         className={`px-4 py-4 text-center ${
-                          isLowest ? "bg-green-50" : ""
+                          isLowest ? "bg-[rgba(15,123,108,0.05)]" : ""
                         }`}
                       >
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-[#37352f]">
                           {data.product.product_name}
                         </div>
                         <div
                           className={`text-lg font-semibold ${
-                            isLowest ? "text-green-600" : colors.text
+                            isLowest ? "text-[#0f7b6c]" : colors.text
                           }`}
                         >
                           {formatCurrency(data.monthlyCost!)}
                         </div>
                         {data.freeQuota > 0 && (
-                          <div className="text-xs text-green-600">
+                          <div className="text-xs text-[#0f7b6c]">
                             {formatNumber(data.freeQuota)} free
                           </div>
                         )}
@@ -237,8 +237,8 @@ export default function VendorComparison({
             })}
           </tbody>
           <tfoot>
-            <tr className="bg-gray-100 font-semibold">
-              <td className="px-6 py-4 text-gray-900">Total Monthly Cost</td>
+            <tr className="bg-[#f7f6f3] font-semibold">
+              <td className="px-6 py-4 text-[#37352f]">Total Monthly Cost</td>
               {vendors.map((vendor) => {
                 const colors = getVendorColor(vendor);
                 const isLowest = vendor === cheapestVendor;
@@ -248,18 +248,18 @@ export default function VendorComparison({
                   <td
                     key={vendor}
                     className={`px-4 py-4 text-center ${
-                      isLowest ? "bg-green-100" : colors.bg
+                      isLowest ? "bg-[rgba(15,123,108,0.1)]" : colors.bg
                     }`}
                   >
                     <div
                       className={`text-xl ${
-                        isLowest ? "text-green-700" : colors.text
+                        isLowest ? "text-[#0f7b6c]" : colors.text
                       }`}
                     >
                       {formatCurrency(total)}
                     </div>
                     {isLowest && (
-                      <div className="text-xs text-green-600 mt-1">
+                      <div className="text-xs text-[#0f7b6c] mt-1">
                         Best Value
                       </div>
                     )}
@@ -273,8 +273,8 @@ export default function VendorComparison({
 
       {/* Savings Comparison */}
       {cheapestVendor && Object.keys(vendorTotals).length > 1 && (
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <div className="px-6 py-4 bg-[#f7f6f3] border-t border-[#e9e9e7]">
+          <h4 className="text-sm font-medium text-[#37352f] mb-3">
             Potential Savings with {cheapestVendor}
           </h4>
           <div className="flex flex-wrap gap-4">

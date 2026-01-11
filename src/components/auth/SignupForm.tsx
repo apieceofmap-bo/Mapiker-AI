@@ -73,8 +73,8 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
 
   if (!isConfigured) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
-        <p className="text-amber-800">
+      <div className="bg-[rgba(223,171,1,0.1)] border border-[rgba(223,171,1,0.3)] rounded-md p-4 text-center">
+        <p className="text-[#b8860b] text-sm">
           Authentication is not configured. Please set up Supabase environment variables.
         </p>
       </div>
@@ -83,10 +83,10 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
 
   if (success) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <div className="text-4xl mb-4">✓</div>
-        <h3 className="font-semibold text-green-800 mb-2">Account Created!</h3>
-        <p className="text-green-700 text-sm">
+      <div className="bg-[rgba(15,123,108,0.08)] border border-[rgba(15,123,108,0.2)] rounded-md p-6 text-center">
+        <div className="text-3xl mb-3">✓</div>
+        <h3 className="font-semibold text-[#0f7b6c] mb-2">Account Created!</h3>
+        <p className="text-[#0f7b6c] text-sm">
           Please check your email to verify your account. Redirecting to dashboard...
         </p>
       </div>
@@ -94,17 +94,17 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 text-sm">{error}</p>
+        <div className="bg-[rgba(224,62,62,0.08)] border border-[rgba(224,62,62,0.2)] rounded-md p-3">
+          <p className="text-[#e03e3e] text-sm">{error}</p>
         </div>
       )}
 
       <div>
         <label
           htmlFor="email"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-[#37352f] mb-1.5"
         >
           Email
         </label>
@@ -114,7 +114,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f] placeholder-[#9b9a97] transition-colors"
           placeholder="you@example.com"
         />
       </div>
@@ -122,7 +122,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
       <div>
         <label
           htmlFor="password"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-[#37352f] mb-1.5"
         >
           Password
         </label>
@@ -132,7 +132,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f] placeholder-[#9b9a97] transition-colors"
           placeholder="At least 6 characters"
         />
       </div>
@@ -140,7 +140,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
       <div>
         <label
           htmlFor="confirmPassword"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-[#37352f] mb-1.5"
         >
           Confirm Password
         </label>
@@ -150,7 +150,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f] placeholder-[#9b9a97] transition-colors"
           placeholder="Confirm your password"
         />
       </div>
@@ -158,17 +158,17 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
       <button
         type="submit"
         disabled={loading || googleLoading}
-        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2.5 px-4 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Creating account..." : "Create Account"}
       </button>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300" />
+          <div className="w-full border-t border-[#e9e9e7]" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          <span className="px-2 bg-white text-[#9b9a97]">Or continue with</span>
         </div>
       </div>
 
@@ -176,7 +176,7 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
         type="button"
         onClick={handleGoogleSignIn}
         disabled={loading || googleLoading}
-        className="w-full py-3 px-4 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg border border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        className="w-full py-2.5 px-4 bg-white hover:bg-[#f7f6f3] text-[#37352f] font-medium rounded-md border border-[#e9e9e7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
@@ -199,9 +199,9 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
         {googleLoading ? "Connecting..." : "Google"}
       </button>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-[#787774]">
         Already have an account?{" "}
-        <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+        <Link href="/login" className="text-[#37352f] hover:underline font-medium">
           Sign in
         </Link>
       </p>

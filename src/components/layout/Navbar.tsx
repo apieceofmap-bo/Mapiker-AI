@@ -10,6 +10,7 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/catalog", label: "Catalog" },
     { href: "/project/new", label: "New Project" },
   ];
 
@@ -21,28 +22,28 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-white border-b border-[#e9e9e7]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-14">
           {/* Logo and Nav Links */}
           <div className="flex">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 text-xl font-bold text-gray-800"
+              className="flex items-center gap-2 text-lg font-semibold text-[#37352f]"
             >
-              <span className="text-2xl">🗺️</span>
+              <span className="text-xl">🗺️</span>
               <span className="hidden sm:inline">Mapiker-AI</span>
             </Link>
 
-            <div className="hidden sm:ml-8 sm:flex sm:space-x-4">
+            <div className="hidden sm:ml-8 sm:flex sm:space-x-1">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
                     isActive(item.href)
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      ? "bg-[rgba(55,53,47,0.08)] text-[#37352f]"
+                      : "text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)]"
                   }`}
                 >
                   {item.label}
@@ -52,20 +53,20 @@ export default function Navbar() {
           </div>
 
           {/* User Menu */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {!loading && user && (
               <>
                 <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-[#37352f]">
                     {user.email?.split("@")[0]}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[#9b9a97]">
                     {user.email}
                   </span>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
+                  className="px-3 py-1.5 text-sm font-medium text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)] rounded-md transition-colors"
                 >
                   Sign Out
                 </button>
@@ -76,16 +77,16 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Nav */}
-      <div className="sm:hidden border-t border-gray-200">
+      <div className="sm:hidden border-t border-[#e9e9e7]">
         <div className="flex space-x-1 px-2 py-2">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 text-center px-3 py-2 text-sm font-medium rounded-md ${
+              className={`flex-1 text-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 isActive(item.href)
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  ? "bg-[rgba(55,53,47,0.08)] text-[#37352f]"
+                  : "text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)]"
               }`}
             >
               {item.label}

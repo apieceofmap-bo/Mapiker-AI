@@ -75,15 +75,15 @@ export default function CategoryGroup({
   });
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-md border border-[#e9e9e7] overflow-hidden">
       {/* Category Header */}
       <button
         onClick={onToggle}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#f7f6f3] transition-colors"
       >
         <div className="flex items-center gap-3">
           <span
-            className={`transform transition-transform ${
+            className={`transform transition-transform text-[#787774] ${
               isExpanded ? "rotate-90" : ""
             }`}
           >
@@ -91,19 +91,19 @@ export default function CategoryGroup({
           </span>
           <div className="text-left">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-gray-800">{category.name}</h3>
+              <h3 className="font-semibold text-[#37352f]">{category.name}</h3>
               {category.required && (
-                <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
+                <span className="px-2 py-0.5 bg-[rgba(224,62,62,0.1)] text-[#e03e3e] text-xs font-medium rounded">
                   Required
                 </span>
               )}
               {!category.required && (
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                <span className="px-2 py-0.5 bg-[#f7f6f3] text-[#787774] text-xs font-medium rounded">
                   Optional
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#787774]">
               {category.products.length} product{category.products.length !== 1 ? "s" : ""} available
               {category.description && ` • ${category.description}`}
             </p>
@@ -112,12 +112,12 @@ export default function CategoryGroup({
 
         <div className="flex items-center gap-2">
           {hasSelection && (
-            <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
+            <span className="px-3 py-1 bg-[rgba(15,123,108,0.15)] text-[#0f7b6c] text-sm font-medium rounded-full">
               ✓ Selected
             </span>
           )}
           {category.required && !hasSelection && (
-            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-sm font-medium rounded-full">
+            <span className="px-3 py-1 bg-[rgba(223,171,1,0.15)] text-[#b8860b] text-sm font-medium rounded-full">
               Select 1
             </span>
           )}
@@ -126,7 +126,7 @@ export default function CategoryGroup({
 
       {/* Products List */}
       {isExpanded && (
-        <div className="border-t border-gray-200 p-4 space-y-3">
+        <div className="border-t border-[#e9e9e7] p-4 space-y-3">
           {sortedProducts.map((product) => (
             <ProductCard
               key={product.id}

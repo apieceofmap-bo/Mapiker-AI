@@ -382,7 +382,7 @@ export default function ProjectOverviewPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
@@ -391,10 +391,10 @@ export default function ProjectOverviewPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -406,12 +406,12 @@ export default function ProjectOverviewPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">🔍</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">
           Project not found
         </h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -465,23 +465,23 @@ export default function ProjectOverviewPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/dashboard" className="hover:text-gray-700">
+        <div className="flex items-center gap-2 text-sm text-[#787774] mb-2">
+          <Link href="/dashboard" className="hover:text-[#37352f]">
             Dashboard
           </Link>
           <span>/</span>
-          <span className="text-gray-900">{project.name}</span>
+          <span className="text-[#37352f]">{project.name}</span>
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-[#37352f]">{project.name}</h1>
+            <p className="text-[#787774] mt-1">
               {project.use_case_description || project.use_case}
             </p>
           </div>
           <Link
             href={currentStageHref}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors"
           >
             Continue Project →
           </Link>
@@ -489,27 +489,27 @@ export default function ProjectOverviewPage() {
       </div>
 
       {/* Stage Indicator */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={project.current_stage} projectId={projectId} />
       </div>
 
       {/* Project Details & Required Features */}
       {isEditing ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-semibold text-gray-900">Edit Requirements</h3>
+            <h3 className="font-semibold text-[#37352f]">Edit Requirements</h3>
             <div className="flex gap-2">
               <button
                 onClick={cancelEditing}
                 disabled={isSaving}
-                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-[#787774] bg-[#f7f6f3] hover:bg-[#e9e9e7] rounded-md transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={saveRequirements}
                 disabled={isSaving}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 text-sm font-medium text-white bg-[#37352f] hover:bg-[#2f2d28] rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isSaving && (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -520,8 +520,8 @@ export default function ProjectOverviewPage() {
           </div>
 
           {/* Warning message */}
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-700">
+          <div className="mb-6 p-4 bg-[rgba(223,171,1,0.1)] border border-[rgba(223,171,1,0.3)] rounded-md">
+            <p className="text-sm text-[#b8860b]">
               Note: Changing requirements may affect product recommendations. You may need to re-select products after saving.
             </p>
           </div>
@@ -529,17 +529,17 @@ export default function ProjectOverviewPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left column - Project Details */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Project Details</h4>
+              <h4 className="font-medium text-[#37352f]">Project Details</h4>
 
               {/* Use Case */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[#787774] mb-1">
                   Use Case
                 </label>
                 <select
                   value={USE_CASE_OPTIONS.includes(editUseCase) ? editUseCase : "Other"}
                   onChange={(e) => setEditUseCase(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
                 >
                   {USE_CASE_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -551,13 +551,13 @@ export default function ProjectOverviewPage() {
 
               {/* Region */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-[#787774] mb-1">
                   Region
                 </label>
                 <select
                   value={REGION_OPTIONS.includes(editRegion) ? editRegion : "Multiple Regions"}
                   onChange={(e) => setEditRegion(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
                 >
                   {REGION_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -569,26 +569,26 @@ export default function ProjectOverviewPage() {
 
               {/* Application Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#787774] mb-2">
                   Application Type
                 </label>
                 <div className="space-y-2">
                   {APPLICATION_OPTIONS.map((option) => (
                     <label
                       key={option.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-colors ${
                         editApplication.includes(option.id)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-[#37352f] bg-[#f7f6f3]"
+                          : "border-[#e9e9e7] hover:border-[#d3d3d0]"
                       }`}
                     >
                       <input
                         type="checkbox"
                         checked={editApplication.includes(option.id)}
                         onChange={() => toggleApplication(option.id)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded border-[#d3d3d0] text-[#37352f] focus:ring-[#37352f]"
                       />
-                      <span className="text-sm text-gray-900">{option.label}</span>
+                      <span className="text-sm text-[#37352f]">{option.label}</span>
                     </label>
                   ))}
                 </div>
@@ -598,29 +598,29 @@ export default function ProjectOverviewPage() {
 
             {/* Right column - Required Features */}
             <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">Required Features</h4>
+              <h4 className="font-medium text-[#37352f]">Required Features</h4>
               <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto">
                 {FEATURE_OPTIONS.map((feature) => (
                   <label
                     key={feature}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
                       editFeatures.includes(feature)
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-50 hover:bg-gray-100 text-gray-700"
+                        ? "bg-[rgba(55,53,47,0.08)] text-[#37352f]"
+                        : "bg-[#f7f6f3] hover:bg-[#e9e9e7] text-[#787774]"
                     }`}
                   >
                     <input
                       type="checkbox"
                       checked={editFeatures.includes(feature)}
                       onChange={() => toggleFeature(feature)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-[#d3d3d0] text-[#37352f] focus:ring-[#37352f]"
                     />
                     <span className="text-sm">{feature}</span>
                   </label>
                 ))}
               </div>
               {editFeatures.length === 0 && (
-                <p className="text-sm text-amber-600">
+                <p className="text-sm text-[#b8860b]">
                   Select at least one feature
                 </p>
               )}
@@ -629,43 +629,43 @@ export default function ProjectOverviewPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Project Details</h3>
+              <h3 className="font-semibold text-[#37352f]">Project Details</h3>
               <button
                 onClick={startEditing}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-[#37352f] hover:underline font-medium"
               >
                 Edit
               </button>
             </div>
             <dl className="space-y-3">
               <div>
-                <dt className="text-sm text-gray-500">Use Case</dt>
-                <dd className="text-gray-900">{project.use_case}</dd>
+                <dt className="text-sm text-[#787774]">Use Case</dt>
+                <dd className="text-[#37352f]">{project.use_case}</dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Region</dt>
-                <dd className="text-gray-900">{project.region}</dd>
+                <dt className="text-sm text-[#787774]">Region</dt>
+                <dd className="text-[#37352f]">{project.region}</dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Application Type</dt>
-                <dd className="text-gray-900">
+                <dt className="text-sm text-[#787774]">Application Type</dt>
+                <dd className="text-[#37352f]">
                   {Array.isArray(project.application)
                     ? project.application.join(", ")
                     : project.application}
                 </dd>
               </div>
               <div>
-                <dt className="text-sm text-gray-500">Status</dt>
+                <dt className="text-sm text-[#787774]">Status</dt>
                 <dd>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
                       project.status === "completed"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-[rgba(15,123,108,0.15)] text-[#0f7b6c]"
                         : project.status === "in_progress"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-[rgba(46,170,220,0.15)] text-[#2eaadc]"
+                        : "bg-[#f7f6f3] text-[#787774]"
                     }`}
                   >
                     {project.status.replace("_", " ")}
@@ -675,12 +675,12 @@ export default function ProjectOverviewPage() {
             </dl>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Required Features</h3>
+              <h3 className="font-semibold text-[#37352f]">Required Features</h3>
               <button
                 onClick={startEditing}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-[#37352f] hover:underline font-medium"
               >
                 Edit
               </button>
@@ -690,13 +690,13 @@ export default function ProjectOverviewPage() {
                 project.required_features.map((feature) => (
                   <span
                     key={feature}
-                    className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm"
+                    className="px-3 py-1.5 bg-[#f7f6f3] text-[#37352f] rounded-full text-sm"
                   >
                     {feature}
                   </span>
                 ))
               ) : (
-                <span className="text-gray-500">No features specified</span>
+                <span className="text-[#787774]">No features specified</span>
               )}
             </div>
           </div>
@@ -705,25 +705,25 @@ export default function ProjectOverviewPage() {
 
       {/* Re-match Products Section */}
       {showRematchButton && !isEditing && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+        <div className="bg-[rgba(223,171,1,0.1)] border border-[rgba(223,171,1,0.3)] rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-amber-900">Requirements Updated</h3>
-              <p className="text-sm text-amber-700 mt-1">
+              <h3 className="font-semibold text-[#b8860b]">Requirements Updated</h3>
+              <p className="text-sm text-[#b8860b] mt-1">
                 Your requirements have been changed. Would you like to get new product recommendations?
               </p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowRematchButton(false)}
-                className="px-4 py-2 text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#b8860b] hover:text-[#996f00] transition-colors"
               >
                 Dismiss
               </button>
               <button
                 onClick={handleRematch}
                 disabled={isRematching}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-[#b8860b] hover:bg-[#996f00] text-white font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isRematching ? (
                   <>
@@ -742,49 +742,49 @@ export default function ProjectOverviewPage() {
       )}
 
       {/* Stage Navigation */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">Project Stages</h3>
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
+        <h3 className="font-semibold text-[#37352f] mb-4">Project Stages</h3>
         <div className="space-y-3">
           {stages.map((stage) => (
             <div
               key={stage.id}
-              className={`flex items-center justify-between p-4 rounded-lg border ${
+              className={`flex items-center justify-between p-4 rounded-md border ${
                 stage.isCurrent
-                  ? "border-blue-200 bg-blue-50"
+                  ? "border-[rgba(55,53,47,0.3)] bg-[rgba(55,53,47,0.04)]"
                   : stage.isComplete
-                  ? "border-green-200 bg-green-50"
-                  : "border-gray-200 bg-gray-50"
+                  ? "border-[rgba(15,123,108,0.2)] bg-[rgba(15,123,108,0.05)]"
+                  : "border-[#e9e9e7] bg-[#f7f6f3]"
               }`}
             >
               <div className="flex items-center gap-4">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
                     stage.isComplete
-                      ? "bg-green-100"
+                      ? "bg-[rgba(15,123,108,0.15)]"
                       : stage.isCurrent
-                      ? "bg-blue-100"
-                      : "bg-gray-100"
+                      ? "bg-[rgba(55,53,47,0.08)]"
+                      : "bg-[#e9e9e7]"
                   }`}
                 >
                   {stage.isComplete ? "✓" : stage.icon}
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">{stage.name}</div>
-                  <div className="text-sm text-gray-500">{stage.description}</div>
+                  <div className="font-medium text-[#37352f]">{stage.name}</div>
+                  <div className="text-sm text-[#787774]">{stage.description}</div>
                 </div>
               </div>
               {(stage.isComplete || stage.isCurrent) && (
                 stage.id === 1 && !stage.isCurrent ? (
-                  <span className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-400 cursor-not-allowed">
+                  <span className="px-4 py-2 rounded-md text-sm font-medium bg-[#e9e9e7] text-[#9b9a97] cursor-not-allowed">
                     Current Page
                   </span>
                 ) : (
                   <Link
                     href={stage.href}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       stage.isCurrent
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                        ? "bg-[#37352f] text-white hover:bg-[#2f2d28]"
+                        : "bg-white text-[#37352f] border border-[#e9e9e7] hover:bg-[#f7f6f3]"
                     }`}
                   >
                     {stage.isCurrent ? "Continue" : "View"}
@@ -797,7 +797,7 @@ export default function ProjectOverviewPage() {
       </div>
 
       {/* Timestamps */}
-      <div className="text-sm text-gray-500 text-center">
+      <div className="text-sm text-[#787774] text-center">
         Created: {new Date(project.created_at).toLocaleDateString()} ·
         Last updated: {new Date(project.updated_at).toLocaleDateString()}
       </div>
@@ -805,28 +805,28 @@ export default function ProjectOverviewPage() {
       {/* Re-match Results Modal */}
       {showRematchModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#f7f6f3] rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🎯</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-[#37352f] mb-2">
                 New Recommendations Ready
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[#787774]">
                 We found updated product recommendations based on your new requirements.
                 How would you like to proceed?
               </p>
             </div>
 
             {newMatchResult && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-600">
-                  <strong>{newMatchResult.total_matched}</strong> products matched across{" "}
-                  <strong>{newMatchResult.categories.length}</strong> categories
+              <div className="bg-[#f7f6f3] rounded-md p-4 mb-6">
+                <p className="text-sm text-[#787774]">
+                  <strong className="text-[#37352f]">{newMatchResult.total_matched}</strong> products matched across{" "}
+                  <strong className="text-[#37352f]">{newMatchResult.categories.length}</strong> categories
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  Feature coverage: <strong>{newMatchResult.feature_coverage.coverage_percent}%</strong>
+                <p className="text-sm text-[#787774] mt-1">
+                  Feature coverage: <strong className="text-[#37352f]">{newMatchResult.feature_coverage.coverage_percent}%</strong>
                 </p>
               </div>
             )}
@@ -834,13 +834,13 @@ export default function ProjectOverviewPage() {
             <div className="flex flex-col gap-3">
               <button
                 onClick={handleUseNew}
-                className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full px-4 py-3 bg-[#37352f] text-white font-medium rounded-md hover:bg-[#2f2d28] transition-colors"
               >
                 Use New Recommendations
               </button>
               <button
                 onClick={handleKeepCurrent}
-                className="w-full px-4 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="w-full px-4 py-3 border border-[#e9e9e7] text-[#37352f] font-medium rounded-md hover:bg-[#f7f6f3] transition-colors"
               >
                 Keep Current Products
               </button>
@@ -852,32 +852,32 @@ export default function ProjectOverviewPage() {
       {/* Confirm Update/Create Modal */}
       {showConfirmUpdateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[rgba(223,171,1,0.15)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">⚠️</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-[#37352f] mb-2">
                 How to Apply Changes?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[#787774]">
                 Choose whether to update the current project or create a new one
                 with the new recommendations.
               </p>
             </div>
 
             <div className="space-y-3 mb-6">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h4 className="font-medium text-red-900 mb-1">Update Current Project</h4>
-                <p className="text-sm text-red-700">
+              <div className="bg-[rgba(224,62,62,0.08)] border border-[rgba(224,62,62,0.2)] rounded-md p-4">
+                <h4 className="font-medium text-[#e03e3e] mb-1">Update Current Project</h4>
+                <p className="text-sm text-[#e03e3e]">
                   Warning: This will reset your product selections, pricing data,
                   and quality report requests.
                 </p>
               </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-medium text-green-900 mb-1">Create New Project</h4>
-                <p className="text-sm text-green-700">
+              <div className="bg-[rgba(15,123,108,0.08)] border border-[rgba(15,123,108,0.2)] rounded-md p-4">
+                <h4 className="font-medium text-[#0f7b6c] mb-1">Create New Project</h4>
+                <p className="text-sm text-[#0f7b6c]">
                   Creates a new project with the updated recommendations.
                   Your current project will be preserved.
                 </p>
@@ -888,7 +888,7 @@ export default function ProjectOverviewPage() {
               <button
                 onClick={handleCreateNewProject}
                 disabled={isCreatingNewProject || isUpdatingProject}
-                className="w-full px-4 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-[#0f7b6c] text-white font-medium rounded-md hover:bg-[#0a6459] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isCreatingNewProject ? (
                   <>
@@ -902,7 +902,7 @@ export default function ProjectOverviewPage() {
               <button
                 onClick={handleUpdateCurrentProject}
                 disabled={isCreatingNewProject || isUpdatingProject}
-                className="w-full px-4 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-[#e03e3e] text-white font-medium rounded-md hover:bg-[#c93535] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isUpdatingProject ? (
                   <>
@@ -919,7 +919,7 @@ export default function ProjectOverviewPage() {
                   setShowRematchModal(true);
                 }}
                 disabled={isCreatingNewProject || isUpdatingProject}
-                className="w-full px-4 py-2 text-gray-600 font-medium hover:text-gray-800 transition-colors disabled:opacity-50"
+                className="w-full px-4 py-2 text-[#787774] font-medium hover:text-[#37352f] transition-colors disabled:opacity-50"
               >
                 ← Back
               </button>

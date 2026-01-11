@@ -49,15 +49,15 @@ export default function ProductSelection({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Recommended Products</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-[#37352f]">Recommended Products</h2>
+          <p className="text-[#787774] mt-1">
             {matchResult.total_matched} products matched across{" "}
             {matchResult.categories.length} categories
           </p>
         </div>
         <button
           onClick={onBack}
-          className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
+          className="text-[#787774] hover:text-[#37352f] flex items-center gap-1"
         >
           ← Back to Chat
         </button>
@@ -65,22 +65,22 @@ export default function ProductSelection({
 
       {/* Selection Status */}
       <div
-        className={`p-4 rounded-lg border ${
+        className={`p-4 rounded-md border ${
           allRequiredSelected
-            ? "bg-green-50 border-green-200"
-            : "bg-amber-50 border-amber-200"
+            ? "bg-[rgba(15,123,108,0.08)] border-[rgba(15,123,108,0.2)]"
+            : "bg-[rgba(223,171,1,0.08)] border-[rgba(223,171,1,0.2)]"
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {allRequiredSelected ? (
-              <span className="text-green-600 text-xl">✓</span>
+              <span className="text-[#0f7b6c] text-xl">✓</span>
             ) : (
-              <span className="text-amber-600 text-xl">⚠</span>
+              <span className="text-[#b8860b] text-xl">⚠</span>
             )}
             <span
               className={`font-medium ${
-                allRequiredSelected ? "text-green-800" : "text-amber-800"
+                allRequiredSelected ? "text-[#0f7b6c]" : "text-[#b8860b]"
               }`}
             >
               {allRequiredSelected
@@ -91,7 +91,7 @@ export default function ProductSelection({
           {allRequiredSelected && (
             <button
               onClick={onPreview}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-[#37352f] text-white rounded-md font-medium hover:bg-[#2f2d28] transition-colors"
             >
               Continue to Preview →
             </button>
@@ -100,23 +100,23 @@ export default function ProductSelection({
       </div>
 
       {/* Feature Coverage */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
-        <h3 className="font-medium text-gray-800 mb-2">Feature Coverage</h3>
+      <div className="bg-white rounded-md border border-[#e9e9e7] p-4">
+        <h3 className="font-medium text-[#37352f] mb-2">Feature Coverage</h3>
         <div className="flex items-center gap-4">
-          <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div className="flex-1 bg-[#e9e9e7] rounded-full h-2">
             <div
-              className="bg-blue-600 rounded-full h-2 transition-all"
+              className="bg-[#37352f] rounded-full h-2 transition-all"
               style={{ width: `${matchResult.feature_coverage.coverage_percent}%` }}
             />
           </div>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-[#787774]">
             {matchResult.feature_coverage.coverage_percent}% (
             {matchResult.feature_coverage.total_covered}/
             {matchResult.feature_coverage.total_required} features)
           </span>
         </div>
         {matchResult.feature_coverage.uncovered_features.length > 0 && (
-          <p className="text-sm text-amber-600 mt-2">
+          <p className="text-sm text-[#b8860b] mt-2">
             Uncovered: {matchResult.feature_coverage.uncovered_features.join(", ")}
           </p>
         )}
@@ -137,20 +137,20 @@ export default function ProductSelection({
       </div>
 
       {/* Bottom Action */}
-      <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-4 border-t border-[#e9e9e7]">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          className="px-4 py-2 text-[#787774] hover:text-[#37352f]"
         >
           ← Back to Chat
         </button>
         <button
           onClick={onPreview}
           disabled={!allRequiredSelected}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+          className={`px-6 py-3 rounded-md font-medium transition-colors ${
             allRequiredSelected
-              ? "bg-blue-600 text-white hover:bg-blue-700"
-              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              ? "bg-[#37352f] text-white hover:bg-[#2f2d28]"
+              : "bg-[#e9e9e7] text-[#9b9a97] cursor-not-allowed"
           }`}
         >
           {allRequiredSelected

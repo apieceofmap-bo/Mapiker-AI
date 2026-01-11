@@ -86,15 +86,15 @@ export default function CountrySelector({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="font-medium text-gray-900">Select Countries</h4>
-          <p className="text-sm text-gray-500">
+          <h4 className="font-medium text-[#37352f]">Select Countries</h4>
+          <p className="text-sm text-[#787774]">
             Choose the countries to include in the quality report
           </p>
         </div>
         {selectedCountries.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-sm text-red-600 hover:text-red-700"
+            className="text-sm text-[#e03e3e] hover:underline"
           >
             Clear all ({selectedCountries.length})
           </button>
@@ -108,16 +108,16 @@ export default function CountrySelector({
           placeholder="Search countries..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+          className="w-full px-4 py-2 pl-10 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
         />
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9b9a97]">
           🔍
         </span>
       </div>
 
       {/* Selected Countries Preview */}
       {selectedCountries.length > 0 && (
-        <div className="flex flex-wrap gap-2 p-3 bg-blue-50 rounded-lg">
+        <div className="flex flex-wrap gap-2 p-3 bg-[rgba(46,170,220,0.08)] rounded-md">
           {selectedCountries.map((code) => {
             const country = Object.values(countriesByRegion)
               .flat()
@@ -125,12 +125,12 @@ export default function CountrySelector({
             return (
               <span
                 key={code}
-                className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"
+                className="inline-flex items-center gap-1 px-2 py-1 bg-[rgba(46,170,220,0.15)] text-[#2eaadc] rounded-full text-sm"
               >
                 {country?.name || code}
                 <button
                   onClick={() => toggleCountry(code)}
-                  className="hover:text-blue-900"
+                  className="hover:text-[#1d8db8]"
                 >
                   ×
                 </button>
@@ -141,7 +141,7 @@ export default function CountrySelector({
       )}
 
       {/* Regions */}
-      <div className="border border-gray-200 rounded-lg divide-y divide-gray-200 max-h-80 overflow-y-auto">
+      <div className="border border-[#e9e9e7] rounded-md divide-y divide-[#e9e9e7] max-h-80 overflow-y-auto">
         {Object.entries(filteredCountries).map(([region, countries]) => {
           const isExpanded = expandedRegions.has(region);
           const selectedInRegion = countries.filter((c) =>
@@ -154,23 +154,23 @@ export default function CountrySelector({
               {/* Region Header */}
               <button
                 onClick={() => toggleRegion(region)}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50"
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-[#f7f6f3]"
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`transform transition-transform ${
+                    className={`transform transition-transform text-[#787774] ${
                       isExpanded ? "rotate-90" : ""
                     }`}
                   >
                     ▶
                   </span>
-                  <span className="font-medium text-gray-900">{region}</span>
-                  <span className="text-sm text-gray-500">
+                  <span className="font-medium text-[#37352f]">{region}</span>
+                  <span className="text-sm text-[#787774]">
                     ({countries.length} countries)
                   </span>
                 </div>
                 {selectedInRegion > 0 && (
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                  <span className="px-2 py-0.5 bg-[rgba(46,170,220,0.15)] text-[#2eaadc] text-xs rounded-full">
                     {selectedInRegion} selected
                   </span>
                 )}
@@ -178,10 +178,10 @@ export default function CountrySelector({
 
               {/* Countries */}
               {isExpanded && (
-                <div className="px-4 py-2 bg-gray-50">
+                <div className="px-4 py-2 bg-[#f7f6f3]">
                   <button
                     onClick={() => selectAllInRegion(region)}
-                    className="text-sm text-blue-600 hover:text-blue-700 mb-2"
+                    className="text-sm text-[#2eaadc] hover:underline mb-2"
                   >
                     {allSelected ? "Deselect all" : "Select all"} in {region}
                   </button>
@@ -193,17 +193,17 @@ export default function CountrySelector({
                       return (
                         <label
                           key={country.code}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-white hover:bg-gray-100"
+                              ? "bg-[rgba(46,170,220,0.15)] text-[#2eaadc]"
+                              : "bg-white hover:bg-[#e9e9e7]"
                           }`}
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleCountry(country.code)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-[#e9e9e7] text-[#37352f] focus:ring-[#37352f]"
                           />
                           <span className="text-sm">{country.name}</span>
                         </label>
@@ -218,14 +218,14 @@ export default function CountrySelector({
       </div>
 
       {/* Summary */}
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-[#787774]">
         {selectedCountries.length === 0 ? (
-          <span className="text-amber-600">
+          <span className="text-[#b8860b]">
             Select at least 1 country to continue
           </span>
         ) : (
           <span>
-            <span className="font-medium">{selectedCountries.length}</span>{" "}
+            <span className="font-medium text-[#37352f]">{selectedCountries.length}</span>{" "}
             {selectedCountries.length === 1 ? "country" : "countries"} selected
           </span>
         )}

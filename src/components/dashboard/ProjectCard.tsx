@@ -9,16 +9,28 @@ interface ProjectCardProps {
   project: Project;
   onDelete?: (projectId: string) => void;
   onRename?: (projectId: string, newName: string) => Promise<void>;
+  compareMode?: boolean;
+  isSelectedForCompare?: boolean;
+  onToggleCompare?: (projectId: string) => void;
+  canSelectMore?: boolean;
 }
 
 const STATUS_STYLES = {
-  draft: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Draft' },
-  in_progress: { bg: 'bg-blue-100', text: 'text-blue-600', label: 'In Progress' },
-  completed: { bg: 'bg-green-100', text: 'text-green-600', label: 'Completed' },
-  quote_requested: { bg: 'bg-purple-100', text: 'text-purple-600', label: 'Quote Requested' },
+  draft: { bg: 'bg-[#f7f6f3]', text: 'text-[#787774]', label: 'Draft' },
+  in_progress: { bg: 'bg-[rgba(46,170,220,0.15)]', text: 'text-[#2eaadc]', label: 'In Progress' },
+  completed: { bg: 'bg-[rgba(15,123,108,0.15)]', text: 'text-[#0f7b6c]', label: 'Completed' },
+  quote_requested: { bg: 'bg-[rgba(155,89,182,0.15)]', text: 'text-[#9b59b6]', label: 'Quote Requested' },
 };
 
-export default function ProjectCard({ project, onDelete, onRename }: ProjectCardProps) {
+export default function ProjectCard({
+  project,
+  onDelete,
+  onRename,
+  compareMode = false,
+  isSelectedForCompare = false,
+  onToggleCompare,
+  canSelectMore = true,
+}: ProjectCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(project.name);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,9 +85,44 @@ export default function ProjectCard({ project, onDelete, onRename }: ProjectCard
     }
   };
 
+  const handleCardClick = () => {
+    if (compareMode && onToggleCompare && (isSelectedForCompare || canSelectMore)) {
+      onToggleCompare(project.id);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
+    <div
+      className={`bg-white rounded-lg border p-5 transition-colors ${
+        compareMode
+          ? isSelectedForCompare
+            ? 'border-[#37352f] ring-2 ring-[#37352f] cursor-pointer'
+            : canSelectMore
+            ? 'border-[#e9e9e7] hover:border-[#d3d3d0] cursor-pointer'
+            : 'border-[#e9e9e7] opacity-50 cursor-not-allowed'
+          : 'border-[#e9e9e7] hover:bg-[#f7f6f3]'
+      }`}
+      onClick={compareMode ? handleCardClick : undefined}
+    >
+      <div className="flex items-start justify-between mb-3">
+        {/* Compare Mode Checkbox */}
+        {compareMode && (
+          <div className="mr-3 flex-shrink-0">
+            <div
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                isSelectedForCompare
+                  ? 'bg-[#37352f] border-[#37352f]'
+                  : 'border-[#d3d3d0]'
+              }`}
+            >
+              {isSelectedForCompare && (
+                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex-1 min-w-0">
           {isEditing ? (
             <div className="flex items-center gap-2">
@@ -87,43 +134,43 @@ export default function ProjectCard({ project, onDelete, onRename }: ProjectCard
                 onBlur={handleSaveRename}
                 autoFocus
                 disabled={isSaving}
-                className="text-lg font-semibold text-gray-900 border border-blue-300 rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="text-base font-semibold text-[#37352f] border border-[#d3d3d0] rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-[#37352f]"
               />
             </div>
           ) : (
             <div className="flex items-center gap-2 group">
-              <h3 className="text-lg font-semibold text-gray-900 truncate">{project.name}</h3>
+              <h3 className="text-base font-semibold text-[#37352f] truncate">{project.name}</h3>
               {onRename && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 p-1 text-[#9b9a97] hover:text-[#37352f] transition-opacity"
                   title="Rename project"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </button>
               )}
             </div>
           )}
-          <p className="text-sm text-gray-500 mt-1 truncate">
+          <p className="text-sm text-[#787774] mt-1 truncate">
             {project.use_case_description || project.use_case}
           </p>
         </div>
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text} ml-2 flex-shrink-0`}
+          className={`px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text} ml-2 flex-shrink-0`}
         >
           {status.label}
         </span>
       </div>
 
       {/* Stage Progress */}
-      <div className="mb-4">
+      <div className="mb-3">
         <StageIndicator currentStage={project.current_stage} compact />
       </div>
 
       {/* Meta Info */}
-      <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+      <div className="flex items-center gap-3 text-xs text-[#9b9a97] mb-4">
         <span className="flex items-center gap-1">
           <span>📍</span>
           {project.region}
@@ -141,22 +188,24 @@ export default function ProjectCard({ project, onDelete, onRename }: ProjectCard
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-        <Link
-          href={getProjectUrl()}
-          className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white text-center text-sm font-medium rounded-lg transition-colors"
-        >
-          Continue
-        </Link>
-        {onDelete && (
-          <button
-            onClick={() => onDelete(project.id)}
-            className="py-2 px-4 text-red-600 hover:bg-red-50 text-sm font-medium rounded-lg transition-colors"
+      {!compareMode && (
+        <div className="flex items-center gap-2 pt-3 border-t border-[#e9e9e7]">
+          <Link
+            href={getProjectUrl()}
+            className="flex-1 py-2 px-4 bg-[#37352f] hover:bg-[#2f2d28] text-white text-center text-sm font-medium rounded-md transition-colors"
           >
-            Delete
-          </button>
-        )}
-      </div>
+            Continue
+          </Link>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(project.id)}
+              className="py-2 px-3 text-[#e03e3e] hover:bg-[rgba(224,62,62,0.08)] text-sm font-medium rounded-md transition-colors"
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

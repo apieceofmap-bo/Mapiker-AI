@@ -14,6 +14,7 @@ interface CombinedProductPreviewProps {
   selections: SelectionState | EnvironmentSelectionState;
   onSelectionChange: (categoryId: string, productId: string | null, environment?: EnvironmentType) => void;
   onBack: () => void;
+  onResetSelections?: () => void;
   requirements?: Requirements | null;
   isMultiEnvironment?: boolean;
 }
@@ -23,6 +24,7 @@ export default function CombinedProductPreview({
   selections,
   onSelectionChange,
   onBack,
+  onResetSelections,
   requirements,
   isMultiEnvironment = false,
 }: CombinedProductPreviewProps) {
@@ -162,37 +164,48 @@ export default function CombinedProductPreview({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Select Products & Preview</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-2xl font-bold text-[#37352f]">Select Products & Preview</h2>
+          <p className="text-[#787774] mt-1">
             {matchResult.total_matched} products matched across{" "}
             {matchResult.categories.length} categories
           </p>
         </div>
-        <button
-          onClick={onBack}
-          className="text-gray-600 hover:text-gray-800 flex items-center gap-1"
-        >
-          ← Back to Chat
-        </button>
+        <div className="flex items-center gap-3">
+          {onResetSelections && (
+            <button
+              onClick={onResetSelections}
+              className="px-3 py-1.5 text-[#787774] hover:text-[#37352f] border border-[#e9e9e7] hover:border-[#d3d3d0] rounded-md flex items-center gap-1.5 transition-colors"
+            >
+              <span className="text-sm">↻</span>
+              Refresh
+            </button>
+          )}
+          <button
+            onClick={onBack}
+            className="text-[#787774] hover:text-[#37352f] flex items-center gap-1"
+          >
+            ← Back to Chat
+          </button>
+        </div>
       </div>
 
       {/* Selection Status Bar */}
       <div
-        className={`p-4 rounded-lg border ${
+        className={`p-4 rounded-md border ${
           allRequiredSelected
-            ? "bg-green-50 border-green-200"
-            : "bg-amber-50 border-amber-200"
+            ? "bg-[rgba(15,123,108,0.08)] border-[rgba(15,123,108,0.2)]"
+            : "bg-[rgba(223,171,1,0.08)] border-[rgba(223,171,1,0.2)]"
         }`}
       >
         <div className="flex items-center gap-2">
           {allRequiredSelected ? (
-            <span className="text-green-600 text-xl">✓</span>
+            <span className="text-[#0f7b6c] text-xl">✓</span>
           ) : (
-            <span className="text-amber-600 text-xl">⚠</span>
+            <span className="text-[#b8860b] text-xl">⚠</span>
           )}
           <span
             className={`font-medium ${
-              allRequiredSelected ? "text-green-800" : "text-amber-800"
+              allRequiredSelected ? "text-[#0f7b6c]" : "text-[#b8860b]"
             }`}
           >
             {allRequiredSelected
@@ -206,18 +219,18 @@ export default function CombinedProductPreview({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Product Selection */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-gray-800 text-lg">📦 Product Selection</h3>
+          <h3 className="font-semibold text-[#37352f] text-lg">📦 Product Selection</h3>
 
           {/* Feature Coverage */}
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-md border border-[#e9e9e7] p-4">
             <div className="flex items-center gap-4">
-              <div className="flex-1 bg-gray-200 rounded-full h-2">
+              <div className="flex-1 bg-[#e9e9e7] rounded-full h-2">
                 <div
-                  className="bg-blue-600 rounded-full h-2 transition-all"
+                  className="bg-[#37352f] rounded-full h-2 transition-all"
                   style={{ width: `${matchResult.feature_coverage.coverage_percent}%` }}
                 />
               </div>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-[#787774]">
                 {matchResult.feature_coverage.coverage_percent}% coverage
               </span>
             </div>
@@ -225,14 +238,14 @@ export default function CombinedProductPreview({
 
           {/* Provider Recommendation Panel */}
           {hasMultipleProviders && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="bg-[rgba(223,171,1,0.08)] border border-[rgba(223,171,1,0.2)] rounded-md p-4">
               <div className="flex items-start gap-2">
-                <span className="text-amber-600 text-lg">💡</span>
+                <span className="text-[#b8860b] text-lg">💡</span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-amber-800">
+                  <p className="text-sm font-medium text-[#b8860b]">
                     Tip: Select products from the same provider
                   </p>
-                  <p className="text-xs text-amber-700 mt-1">
+                  <p className="text-xs text-[#b8860b] mt-1">
                     Using a single provider simplifies API key management, ensures data consistency, and may offer bundle pricing.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -241,8 +254,8 @@ export default function CombinedProductPreview({
                         key={provider}
                         className={`px-2 py-1 rounded text-xs font-medium ${
                           isRecommended
-                            ? "bg-amber-200 text-amber-800"
-                            : "bg-amber-100 text-amber-700"
+                            ? "bg-[rgba(223,171,1,0.2)] text-[#b8860b]"
+                            : "bg-[rgba(223,171,1,0.1)] text-[#b8860b]"
                         }`}
                       >
                         {provider}: {count} selected
@@ -257,10 +270,10 @@ export default function CombinedProductPreview({
 
           {/* Unified Provider Success */}
           {isUnified && selectedProducts.length > 1 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-[rgba(15,123,108,0.08)] border border-[rgba(15,123,108,0.2)] rounded-md p-4">
               <div className="flex items-center gap-2">
-                <span className="text-green-600 text-lg">✓</span>
-                <p className="text-sm font-medium text-green-800">
+                <span className="text-[#0f7b6c] text-lg">✓</span>
+                <p className="text-sm font-medium text-[#0f7b6c]">
                   Great! All products are from {recommendedProvider} - unified integration
                 </p>
               </div>
@@ -315,36 +328,41 @@ export default function CombinedProductPreview({
 
         {/* Right Column: Preview & Export */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-gray-800 text-lg">🗺️ Preview & Export</h3>
+          <h3 className="font-semibold text-[#37352f] text-lg">🗺️ Preview & Export</h3>
 
           {/* Map Preview */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden p-4">
+          <div className="bg-white rounded-md border border-[#e9e9e7] overflow-hidden p-4">
             {allRequiredSelected && requirements ? (
-              <MapPreview
-                useCase={requirements.use_case}
-                region={requirements.region}
-                selectedCategories={
-                  isMultiEnvironment
-                    ? Object.keys(getSelectionsForEnv('mobile')).filter(
-                        (catId) => getSelectionsForEnv('mobile')[catId] !== null
-                      )
-                    : Object.keys(selections as SelectionState).filter(
-                        (catId) => (selections as SelectionState)[catId] !== null
-                      )
-                }
-                provider={
-                  recommendedProvider?.toLowerCase().includes("google")
-                    ? "google"
-                    : recommendedProvider?.toLowerCase().includes("here")
-                    ? "here"
-                    : recommendedProvider?.toLowerCase().includes("mapbox")
-                    ? "mapbox"
-                    : "google"
-                }
-              />
+              (() => {
+                const selectedCats = isMultiEnvironment
+                  ? Object.keys(getSelectionsForEnv('mobile')).filter(
+                      (catId) => getSelectionsForEnv('mobile')[catId] !== null
+                    )
+                  : Object.keys(selections as SelectionState).filter(
+                      (catId) => (selections as SelectionState)[catId] !== null
+                    );
+                const mapProvider = recommendedProvider?.toLowerCase().includes("google")
+                  ? "google"
+                  : recommendedProvider?.toLowerCase().includes("here")
+                  ? "here"
+                  : recommendedProvider?.toLowerCase().includes("mapbox")
+                  ? "mapbox"
+                  : "google";
+                const mapKey = `map-${requirements.use_case}-${requirements.region}-${mapProvider}-${selectedCats.join(',')}`;
+
+                return (
+                  <MapPreview
+                    key={mapKey}
+                    useCase={requirements.use_case}
+                    region={requirements.region}
+                    selectedCategories={selectedCats}
+                    provider={mapProvider}
+                  />
+                );
+              })()
             ) : (
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center text-gray-400">
+              <div className="aspect-video bg-[#f7f6f3] rounded-md flex items-center justify-center">
+                <div className="text-center text-[#9b9a97]">
                   <div className="text-5xl mb-3 opacity-50">🗺️</div>
                   <p className="font-medium">Select required products</p>
                   <p className="text-sm">to see the preview</p>
@@ -355,19 +373,19 @@ export default function CombinedProductPreview({
 
           {/* Selected Products Summary */}
           {selectedProducts.length > 0 && (
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <h4 className="font-medium text-gray-800 mb-3">Selected Products</h4>
+            <div className="bg-white rounded-md border border-[#e9e9e7] p-4">
+              <h4 className="font-medium text-[#37352f] mb-3">Selected Products</h4>
               <div className="space-y-3">
                 {Object.entries(productsByProvider).map(([provider, products]) => (
                   <div key={provider}>
-                    <p className="text-xs font-medium text-gray-500 uppercase mb-1">
+                    <p className="text-xs font-medium text-[#787774] uppercase mb-1">
                       {provider}
                     </p>
                     <ul className="space-y-1">
                       {products.map((product) => (
                         <li key={product.id} className="flex items-center gap-2 text-sm">
-                          <span className="text-green-500">✓</span>
-                          <span className="text-gray-700">{product.product_name}</span>
+                          <span className="text-[#0f7b6c]">✓</span>
+                          <span className="text-[#37352f]">{product.product_name}</span>
                         </li>
                       ))}
                     </ul>
@@ -394,7 +412,7 @@ export default function CombinedProductPreview({
                   const code = generateFullCode(selectedProducts);
                   handleCopyCode(code);
                 }}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-800 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-3 bg-[#f7f6f3] text-[#37352f] rounded-md font-medium hover:bg-[#e9e9e7] transition-colors"
               >
                 {copied ? "✓ Copied!" : "Copy All Code"}
               </button>
@@ -409,7 +427,7 @@ export default function CombinedProductPreview({
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-3 bg-[#37352f] text-white rounded-md font-medium hover:bg-[#2f2d28] transition-colors"
               >
                 Download HTML
               </button>
@@ -420,7 +438,7 @@ export default function CombinedProductPreview({
           {allRequiredSelected && requirements && (
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              className="w-full px-4 py-3 bg-[#0f7b6c] text-white rounded-md font-medium hover:bg-[#0a6459] transition-colors flex items-center justify-center gap-2"
             >
               <span>📧</span>
               Send Report to Email
@@ -430,14 +448,14 @@ export default function CombinedProductPreview({
       </div>
 
       {/* Bottom Actions */}
-      <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+      <div className="flex justify-between items-center pt-4 border-t border-[#e9e9e7]">
         <button
           onClick={onBack}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
+          className="px-4 py-2 text-[#787774] hover:text-[#37352f]"
         >
           ← Back to Chat
         </button>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-[#787774]">
           {selectedProducts.length} product{selectedProducts.length !== 1 ? "s" : ""} selected
         </div>
       </div>

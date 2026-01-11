@@ -15,17 +15,17 @@ export default function SessionRestoreDialog({
 }: SessionRestoreDialogProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md overflow-hidden">
+        <div className="p-6 border-b border-[#e9e9e7]">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-[rgba(46,170,220,0.15)] rounded-full flex items-center justify-center">
               <span className="text-2xl">🔄</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-800">
+              <h3 className="text-lg font-bold text-[#37352f]">
                 Welcome Back!
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#787774]">
                 You have an unfinished session
               </p>
             </div>
@@ -33,9 +33,9 @@ export default function SessionRestoreDialog({
         </div>
 
         <div className="p-6 space-y-4">
-          <p className="text-gray-600">
+          <p className="text-[#787774]">
             We found a previous session from{" "}
-            <span className="font-medium text-gray-800">
+            <span className="font-medium text-[#37352f]">
               {formatSessionAge(sessionAge)}
             </span>
             . Would you like to continue where you left off?
@@ -44,20 +44,20 @@ export default function SessionRestoreDialog({
           <div className="space-y-3">
             <button
               onClick={onRestore}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-[#37352f] text-white rounded-md font-medium hover:bg-[#2f2d28] transition-colors flex items-center justify-center gap-2"
             >
               <span>🔄</span>
               Continue Previous Session
             </button>
             <button
               onClick={onStartNew}
-              className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              className="w-full py-3 bg-[#f7f6f3] text-[#37352f] rounded-md font-medium hover:bg-[#e9e9e7] transition-colors"
             >
               Start Fresh
             </button>
           </div>
 
-          <p className="text-xs text-gray-400 text-center">
+          <p className="text-xs text-[#9b9a97] text-center">
             Previous sessions expire after 24 hours
           </p>
         </div>

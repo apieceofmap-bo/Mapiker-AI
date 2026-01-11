@@ -10,11 +10,11 @@ function SignupContent() {
   const redirect = searchParams.get("redirect") || "/dashboard";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-[#f7f6f3] flex flex-col">
       {/* Header */}
-      <header className="py-6 px-8">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-gray-800">
-          <span className="text-2xl">🗺️</span>
+      <header className="py-4 px-8">
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-[#37352f]">
+          <span className="text-xl">🗺️</span>
           Mapiker-AI
         </Link>
       </header>
@@ -22,8 +22,8 @@ function SignupContent() {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-xl shadow-lg p-8">
-            <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-8">
+            <h1 className="text-xl font-semibold text-[#37352f] text-center mb-6">
               Create Account
             </h1>
             <SignupForm redirectTo={redirect} />
@@ -32,7 +32,7 @@ function SignupContent() {
       </main>
 
       {/* Footer */}
-      <footer className="py-4 text-center text-sm text-gray-500">
+      <footer className="py-4 text-center text-sm text-[#9b9a97]">
         &copy; {new Date().getFullYear()} A Piece of Map. All rights reserved.
       </footer>
     </div>
@@ -42,8 +42,8 @@ function SignupContent() {
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f6f3]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     }>
       <SignupContent />

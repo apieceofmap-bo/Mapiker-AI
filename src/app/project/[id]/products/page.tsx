@@ -178,10 +178,10 @@ export default function ProductsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#fbfbfa]">
         <Navbar />
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
         </div>
       </div>
     );
@@ -189,14 +189,14 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#fbfbfa]">
         <Navbar />
         <div className="text-center py-20">
           <div className="text-4xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+          <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-[#37352f] hover:underline font-medium"
           >
             Back to Dashboard
           </Link>
@@ -207,16 +207,16 @@ export default function ProductsPage() {
 
   if (!project || !project.match_result) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#fbfbfa]">
         <Navbar />
         <div className="text-center py-20">
           <div className="text-4xl mb-4">🔍</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-[#37352f] mb-2">
             Project not found
           </h2>
           <Link
             href="/dashboard"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-[#37352f] hover:underline font-medium"
           >
             Back to Dashboard
           </Link>
@@ -234,42 +234,42 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fbfbfa]">
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Link href="/dashboard" className="hover:text-gray-700">
+          <div className="flex items-center gap-2 text-sm text-[#787774]">
+            <Link href="/dashboard" className="hover:text-[#37352f]">
               Dashboard
             </Link>
             <span>/</span>
-            <Link href={`/project/${projectId}`} className="hover:text-gray-700">
+            <Link href={`/project/${projectId}`} className="hover:text-[#37352f]">
               {project.name}
             </Link>
             <span>/</span>
-            <span className="text-gray-900">Products</span>
+            <span className="text-[#37352f]">Products</span>
           </div>
         </div>
 
         {/* Stage Indicator */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg border border-[#e9e9e7] p-6 mb-6">
           <StageIndicator currentStage={2} projectId={projectId} />
         </div>
 
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Product Selection</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-[#37352f]">Product Selection</h1>
+            <p className="text-[#787774] mt-1">
               Review and modify your selected products
             </p>
           </div>
           {hasChanges && (
             <button
               onClick={handleResetSelections}
-              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[#787774] bg-[#f7f6f3] hover:bg-[#e9e9e7] rounded-md transition-colors"
             >
               Reset Selections
             </button>
@@ -287,13 +287,13 @@ export default function ProductsPage() {
         />
 
         {/* Continue Section */}
-        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+        <div className="mt-8 bg-white rounded-lg border border-[#e9e9e7] p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-[#37352f]">
                 {hasChanges ? "Product selection changed" : "Continue to pricing"}
               </h3>
-              <p className="text-gray-500 text-sm mt-1">
+              <p className="text-[#787774] text-sm mt-1">
                 {hasChanges
                   ? "A new project will be created with your updated selections"
                   : "Proceed to view pricing comparison"
@@ -303,7 +303,7 @@ export default function ProductsPage() {
 
             <button
               onClick={handleContinue}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2"
             >
               {hasChanges ? "Save Changes & Continue →" : "Continue to Pricing →"}
             </button>
@@ -314,25 +314,25 @@ export default function ProductsPage() {
       {/* Change Confirmation Modal */}
       {showChangeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-[rgba(223,171,1,0.15)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">⚠️</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-xl font-bold text-[#37352f] mb-2">
                 Create New Project?
               </h3>
-              <p className="text-gray-600">
+              <p className="text-[#787774]">
                 Product selections have been changed. A new project will be created to preserve your existing data.
               </p>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-600">
-                <strong>Original project:</strong> {project.name}
+            <div className="bg-[#f7f6f3] rounded-md p-4 mb-6">
+              <p className="text-sm text-[#787774]">
+                <strong className="text-[#37352f]">Original project:</strong> {project.name}
               </p>
-              <p className="text-sm text-gray-600 mt-1">
-                <strong>New project:</strong> {project.name.replace(/\s+\d+$/, '')} {/* Show preview of new name */}
+              <p className="text-sm text-[#787774] mt-1">
+                <strong className="text-[#37352f]">New project:</strong> {project.name.replace(/\s+\d+$/, '')} {/* Show preview of new name */}
                 {(() => {
                   const baseName = project.name.replace(/\s+\d+$/, '');
                   return ` 2 (or higher)`;
@@ -343,14 +343,14 @@ export default function ProductsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowChangeModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-[#e9e9e7] text-[#37352f] font-medium rounded-md hover:bg-[#f7f6f3] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCreateNewProject}
                 disabled={isSaving}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-[#37352f] text-white font-medium rounded-md hover:bg-[#2f2d28] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isSaving ? (
                   <>

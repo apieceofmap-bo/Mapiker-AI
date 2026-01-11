@@ -78,7 +78,7 @@ export default function DashboardPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
@@ -88,27 +88,27 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Projects</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-xl font-semibold text-[#37352f]">My Projects</h1>
+          <p className="text-[#787774] text-sm mt-1">
             Manage your map product recommendations
           </p>
         </div>
         <Link
           href="/project/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors text-sm"
         >
-          <span className="text-lg">+</span>
+          <span>+</span>
           New Project
         </Link>
       </div>
 
       {/* Error State */}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600">{error}</p>
+        <div className="mb-6 p-4 bg-[rgba(224,62,62,0.08)] border border-[rgba(224,62,62,0.2)] rounded-md">
+          <p className="text-[#e03e3e] text-sm">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-red-700 underline"
+            className="mt-2 text-sm text-[#e03e3e] underline"
           >
             Try again
           </button>

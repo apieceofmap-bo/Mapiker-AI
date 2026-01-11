@@ -30,8 +30,8 @@ export default function FeatureSelector({
     <div className="space-y-4">
       {/* Header */}
       <div>
-        <h4 className="font-medium text-gray-900">Select Features to Compare</h4>
-        <p className="text-sm text-gray-500">
+        <h4 className="font-medium text-[#37352f]">Select Features to Compare</h4>
+        <p className="text-sm text-[#787774]">
           Choose the quality metrics to evaluate across vendors
         </p>
       </div>
@@ -46,10 +46,10 @@ export default function FeatureSelector({
           return (
             <label
               key={feature.id}
-              className={`flex items-start gap-4 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+              className={`flex items-start gap-4 p-4 rounded-md border-2 cursor-pointer transition-all ${
                 isSelected
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-gray-300 bg-white"
+                  ? "border-[#37352f] bg-[#f7f6f3]"
+                  : "border-[#e9e9e7] hover:border-[#d3d3d0] bg-white"
               }`}
             >
               <input
@@ -57,26 +57,26 @@ export default function FeatureSelector({
                 checked={isSelected}
                 onChange={() => toggleFeature(feature.id)}
                 disabled={isSelected && selectedFeatures.length === 1}
-                className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="mt-1 rounded border-[#e9e9e7] text-[#37352f] focus:ring-[#37352f]"
               />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-[#37352f]">
                     {feature.name}
                   </span>
                   {isSelected && (
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                         isFreeFeature
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-[rgba(15,123,108,0.15)] text-[#0f7b6c]"
+                          : "bg-[rgba(46,170,220,0.15)] text-[#2eaadc]"
                       }`}
                     >
                       {isFreeFeature ? "FREE" : `+$10/country`}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-[#787774] mt-1">
                   {feature.description}
                 </p>
               </div>
@@ -86,19 +86,19 @@ export default function FeatureSelector({
       </div>
 
       {/* Summary */}
-      <div className="p-4 bg-gray-50 rounded-lg">
+      <div className="p-4 bg-[#f7f6f3] rounded-md">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Selected features:</span>
-          <span className="font-medium text-gray-900">
+          <span className="text-[#787774]">Selected features:</span>
+          <span className="font-medium text-[#37352f]">
             {selectedFeatures.length} features
           </span>
         </div>
         {selectedFeatures.length > 1 && countryCount > 0 && (
           <div className="flex items-center justify-between text-sm mt-2">
-            <span className="text-gray-600">
+            <span className="text-[#787774]">
               Additional features cost ({additionalFeaturesCount} × {countryCount} countries × $10):
             </span>
-            <span className="font-medium text-blue-600">
+            <span className="font-medium text-[#2eaadc]">
               +${additionalCost.toFixed(2)}
             </span>
           </div>
@@ -106,8 +106,8 @@ export default function FeatureSelector({
       </div>
 
       {/* Info */}
-      <div className="flex items-start gap-2 text-sm text-gray-500">
-        <span className="text-green-500">ℹ️</span>
+      <div className="flex items-start gap-2 text-sm text-[#787774]">
+        <span className="text-[#0f7b6c]">ℹ️</span>
         <span>
           First feature is included free with the base price. Each additional
           feature adds $10 per country.

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Requirements, MatchResponse, SelectionState, ChatMessage, EnvironmentSelectionState, EnvironmentType } from "@/lib/types";
+import { sendChatMessage } from "@/lib/api";
 import { matchProducts } from "@/lib/api";
 import { isMultiEnvironmentRequest, filterCategoriesByEnvironment } from "@/lib/environmentDetector";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -60,14 +61,14 @@ function LoadingScreen() {
     <div className="flex items-center justify-center h-[600px]">
       <div className="text-center">
         <div className="relative w-16 h-16 mx-auto mb-6">
-          <div className="w-16 h-16 border-4 border-blue-200 rounded-full" />
-          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-16 h-16 border-4 border-[#e9e9e7] rounded-full" />
+          <div className="absolute top-0 left-0 w-16 h-16 border-4 border-[#37352f] border-t-transparent rounded-full animate-spin" />
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-2xl">
             {currentMessage.icon}
           </div>
         </div>
 
-        <p className="text-gray-700 font-medium text-lg mb-2 transition-all duration-300">
+        <p className="text-[#37352f] font-medium text-lg mb-2 transition-all duration-300">
           {currentMessage.text}{dots}
         </p>
 
@@ -77,16 +78,16 @@ function LoadingScreen() {
               key={idx}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 idx === messageIndex
-                  ? "bg-blue-600 scale-125"
+                  ? "bg-[#37352f] scale-125"
                   : idx < messageIndex
-                  ? "bg-blue-400"
-                  : "bg-gray-300"
+                  ? "bg-[#787774]"
+                  : "bg-[#e9e9e7]"
               }`}
             />
           ))}
         </div>
 
-        <p className="text-gray-400 text-sm mt-4">
+        <p className="text-[#9b9a97] text-sm mt-4">
           This may take a few minutes
         </p>
       </div>
@@ -94,8 +95,16 @@ function LoadingScreen() {
   );
 }
 
-export default function NewProjectPage() {
+// Initial greeting message constant (same as ChatWindow)
+const INITIAL_MESSAGE: ChatMessage = {
+  role: "assistant",
+  content:
+    "Hi! I'm Mapiker-AI, here to help you find the right map products for your project.\n\nWhat kind of service are you looking to build using maps products?\n\nExamples: Food delivery, Ride-hailing, Logistics, Fleet management, Store locator, etc.",
+};
+
+function NewProjectPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const supabase = createClient();
 
@@ -106,6 +115,7 @@ export default function NewProjectPage() {
   const [isMultiEnv, setIsMultiEnv] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isProcessingInitial, setIsProcessingInitial] = useState(false);
 
   // Session restore state
   const [showRestoreDialog, setShowRestoreDialog] = useState(false);
@@ -116,6 +126,13 @@ export default function NewProjectPage() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[] | undefined>(undefined);
   const [chatRequirements, setChatRequirements] = useState<Requirements | null | undefined>(undefined);
   const [chatIsComplete, setChatIsComplete] = useState<boolean | undefined>(undefined);
+
+  // Flag to track if initial message was processed
+  const [initialProcessed, setInitialProcessed] = useState(false);
+
+  // Check if we need to wait for initial message processing
+  const initialMessage = searchParams.get("initial");
+  const shouldWaitForInitial = !!initialMessage && !initialProcessed && !showRestoreDialog;
 
   // Check for existing session on mount
   useEffect(() => {
@@ -129,6 +146,61 @@ export default function NewProjectPage() {
       }
     }
   }, []);
+
+  // Handle initial message from landing page
+  useEffect(() => {
+    // Only process if:
+    // 1. We have an initial message
+    // 2. Haven't processed it yet
+    // 3. No pending session to restore
+    // 4. Not currently processing
+    if (
+      initialMessage &&
+      !initialProcessed &&
+      !showRestoreDialog &&
+      !pendingSession &&
+      !isProcessingInitial &&
+      !chatMessages // Only if chat hasn't started
+    ) {
+      setInitialProcessed(true);
+      setIsProcessingInitial(true);
+
+      // Pre-populate messages and auto-send
+      const userMsg: ChatMessage = { role: "user", content: initialMessage };
+      const initialMessages: ChatMessage[] = [INITIAL_MESSAGE, userMsg];
+
+      // Set initial messages to show immediately
+      setChatMessages(initialMessages);
+
+      // Auto-send the message to get AI response
+      (async () => {
+        try {
+          const response = await sendChatMessage(initialMessage, [INITIAL_MESSAGE]);
+
+          const updatedMessages: ChatMessage[] = [
+            ...initialMessages,
+            { role: "assistant", content: response.reply },
+          ];
+
+          setChatMessages(updatedMessages);
+
+          if (response.is_complete && response.extracted_requirements) {
+            setChatIsComplete(true);
+            setChatRequirements(response.extracted_requirements);
+          }
+        } catch (error) {
+          console.error("Error processing initial message:", error);
+          const errorMessages: ChatMessage[] = [
+            ...initialMessages,
+            { role: "assistant", content: "I apologize, but I encountered an error. Please try again." },
+          ];
+          setChatMessages(errorMessages);
+        } finally {
+          setIsProcessingInitial(false);
+        }
+      })();
+    }
+  }, [searchParams, initialProcessed, showRestoreDialog, pendingSession, isProcessingInitial, chatMessages]);
 
   const handleRestoreSession = useCallback(() => {
     if (pendingSession) {
@@ -257,6 +329,34 @@ export default function NewProjectPage() {
     setStep("chat");
   };
 
+  const handleResetSelections = () => {
+    if (isMultiEnv && matchResult) {
+      const mobileCategories = filterCategoriesByEnvironment(matchResult.categories, 'mobile');
+      const backendCategories = filterCategoriesByEnvironment(matchResult.categories, 'backend');
+
+      const mobileSelections: SelectionState = {};
+      mobileCategories.forEach((cat) => {
+        mobileSelections[cat.id] = null;
+      });
+
+      const backendSelections: SelectionState = {};
+      backendCategories.forEach((cat) => {
+        backendSelections[cat.id] = null;
+      });
+
+      setSelections({
+        mobile: mobileSelections,
+        backend: backendSelections,
+      });
+    } else if (matchResult) {
+      const initialSelections: SelectionState = {};
+      matchResult.categories.forEach((cat) => {
+        initialSelections[cat.id] = null;
+      });
+      setSelections(initialSelections);
+    }
+  };
+
   // Save project to Supabase
   const handleSaveProject = async () => {
     if (!user || !requirements || !matchResult) return;
@@ -303,7 +403,7 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#fbfbfa]">
       <Navbar />
 
       <main className="max-w-6xl mx-auto px-4 py-6">
@@ -311,12 +411,12 @@ export default function NewProjectPage() {
         <div className="mb-6 flex items-center justify-center gap-4">
           <div
             className={`flex items-center gap-2 ${
-              step === "chat" ? "text-blue-600" : "text-gray-400"
+              step === "chat" ? "text-[#37352f]" : "text-[#9b9a97]"
             }`}
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === "chat" ? "bg-blue-600 text-white" : "bg-green-500 text-white"
+                step === "chat" ? "bg-[#37352f] text-white" : "bg-[#0f7b6c] text-white"
               }`}
             >
               {step === "products" ? "✓" : "1"}
@@ -324,16 +424,16 @@ export default function NewProjectPage() {
             <span className="text-sm font-medium">Requirements</span>
           </div>
 
-          <div className="w-8 h-px bg-gray-300" />
+          <div className="w-8 h-px bg-[#e9e9e7]" />
 
           <div
             className={`flex items-center gap-2 ${
-              step === "products" ? "text-blue-600" : "text-gray-400"
+              step === "products" ? "text-[#37352f]" : "text-[#9b9a97]"
             }`}
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                step === "products" ? "bg-blue-600 text-white" : "bg-gray-200"
+                step === "products" ? "bg-[#37352f] text-white" : "bg-[#e9e9e7] text-[#787774]"
               }`}
             >
               2
@@ -348,14 +448,26 @@ export default function NewProjectPage() {
           <>
             {step === "chat" && (
               <div className="max-w-2xl mx-auto">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-[600px] overflow-hidden">
-                  <ChatWindow
-                    onComplete={handleChatComplete}
-                    onStateChange={handleChatStateChange}
-                    initialMessages={chatMessages}
-                    initialRequirements={chatRequirements}
-                    initialIsComplete={chatIsComplete}
-                  />
+                <div className="bg-white rounded-lg border border-[#e9e9e7] h-[600px] overflow-hidden">
+                  {(shouldWaitForInitial || isProcessingInitial) ? (
+                    // Show loading while processing initial message from landing page
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <div className="relative w-12 h-12 mb-4">
+                        <div className="w-12 h-12 border-4 border-[#e9e9e7] rounded-full" />
+                        <div className="absolute top-0 left-0 w-12 h-12 border-4 border-[#37352f] border-t-transparent rounded-full animate-spin" />
+                      </div>
+                      <p className="text-[#37352f] font-medium">Processing your request...</p>
+                      <p className="text-[#787774] text-sm mt-1">Setting up your conversation</p>
+                    </div>
+                  ) : (
+                    <ChatWindow
+                      onComplete={handleChatComplete}
+                      onStateChange={handleChatStateChange}
+                      initialMessages={chatMessages}
+                      initialRequirements={chatRequirements}
+                      initialIsComplete={chatIsComplete}
+                    />
+                  )}
                 </div>
               </div>
             )}
@@ -367,18 +479,19 @@ export default function NewProjectPage() {
                   selections={selections}
                   onSelectionChange={handleSelectionChange}
                   onBack={handleBack}
+                  onResetSelections={handleResetSelections}
                   requirements={requirements}
                   isMultiEnvironment={isMultiEnv}
                 />
 
                 {/* Save Project Section */}
-                <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+                <div className="mt-8 bg-white rounded-lg border border-[#e9e9e7] p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className="text-lg font-semibold text-[#37352f]">
                         Ready to continue?
                       </h3>
-                      <p className="text-gray-500 text-sm mt-1">
+                      <p className="text-[#787774] text-sm mt-1">
                         Save your project to see pricing and quality evaluation options
                       </p>
                     </div>
@@ -387,7 +500,7 @@ export default function NewProjectPage() {
                       <button
                         onClick={handleSaveProject}
                         disabled={isSaving}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
+                        className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors disabled:opacity-50 flex items-center gap-2"
                       >
                         {isSaving ? (
                           <>
@@ -402,12 +515,12 @@ export default function NewProjectPage() {
                       </button>
                     ) : (
                       <div className="text-center">
-                        <p className="text-sm text-gray-500 mb-2">
+                        <p className="text-sm text-[#787774] mb-2">
                           Login to save your project
                         </p>
                         <a
                           href={`/login?redirect=${encodeURIComponent('/project/new')}`}
-                          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors inline-block"
+                          className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors inline-block"
                         >
                           Login to Continue
                         </a>
@@ -446,5 +559,20 @@ export default function NewProjectPage() {
         />
       )}
     </div>
+  );
+}
+
+// Wrapper with Suspense for useSearchParams
+export default function NewProjectPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#fbfbfa]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
+        </div>
+      }
+    >
+      <NewProjectPageContent />
+    </Suspense>
   );
 }

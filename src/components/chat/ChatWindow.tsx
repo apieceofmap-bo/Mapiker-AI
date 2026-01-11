@@ -115,13 +115,13 @@ export default function ChatWindow({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-200">
-        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-          <span className="text-xl">🗺️</span>
+      <div className="flex items-center gap-3 p-4 border-b border-[#e9e9e7]">
+        <div className="w-9 h-9 bg-[#f7f6f3] rounded-full flex items-center justify-center">
+          <span className="text-lg">🗺️</span>
         </div>
         <div>
-          <h2 className="font-semibold text-gray-800">Mapiker-AI</h2>
-          <p className="text-xs text-gray-500">Tell me about your project</p>
+          <h2 className="font-semibold text-[#37352f] text-sm">Mapiker-AI</h2>
+          <p className="text-xs text-[#9b9a97]">Tell me about your project</p>
         </div>
       </div>
 
@@ -133,17 +133,17 @@ export default function ChatWindow({
 
         {isLoading && (
           <div className="flex justify-start mb-4">
-            <div className="bg-gray-100 rounded-2xl rounded-bl-md px-4 py-3">
+            <div className="bg-[#f7f6f3] rounded-lg rounded-bl-sm px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="text-lg">🗺️</span>
+                <span className="text-base">🗺️</span>
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  <span className="w-1.5 h-1.5 bg-[#9b9a97] rounded-full animate-bounce" />
                   <span
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-1.5 h-1.5 bg-[#9b9a97] rounded-full animate-bounce"
                     style={{ animationDelay: "0.1s" }}
                   />
                   <span
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-1.5 h-1.5 bg-[#9b9a97] rounded-full animate-bounce"
                     style={{ animationDelay: "0.2s" }}
                   />
                 </div>
@@ -157,12 +157,12 @@ export default function ChatWindow({
 
       {/* Requirements Summary */}
       {isComplete && requirements && (
-        <div className="mx-4 mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div className="mx-4 mb-4 p-4 bg-[rgba(15,123,108,0.08)] border border-[rgba(15,123,108,0.2)] rounded-md">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-green-600">✓</span>
-            <span className="font-medium text-green-800">Requirements captured!</span>
+            <span className="text-[#0f7b6c]">✓</span>
+            <span className="font-medium text-[#0f7b6c] text-sm">Requirements captured!</span>
           </div>
-          <div className="text-sm text-green-700 space-y-1">
+          <div className="text-sm text-[#0f7b6c] space-y-1">
             <p>
               <strong>Use Case:</strong> {requirements.use_case}
             </p>
@@ -180,7 +180,7 @@ export default function ChatWindow({
       )}
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 space-y-3">
+      <div className="p-4 border-t border-[#e9e9e7] space-y-3">
         {/* Chat input - always visible */}
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
@@ -191,12 +191,12 @@ export default function ChatWindow({
             placeholder={isComplete ? "Type to modify requirements..." : "Type your message..."}
             disabled={isLoading}
             autoFocus
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 text-gray-900 placeholder:text-gray-400"
+            className="flex-1 px-3 py-2.5 border border-[#e9e9e7] rounded-md focus:outline-none focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] disabled:bg-[#f7f6f3] text-[#37352f] placeholder:text-[#9b9a97] text-sm"
           />
           <button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 bg-[#37352f] text-white rounded-md font-medium hover:bg-[#2f2d28] transition-colors disabled:bg-[#e9e9e7] disabled:text-[#9b9a97] disabled:cursor-not-allowed text-sm"
           >
             Send
           </button>
@@ -206,7 +206,7 @@ export default function ChatWindow({
         {isComplete && (
           <button
             onClick={handleProceed}
-            className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-[#0f7b6c] text-white rounded-md font-medium hover:bg-[#0a6459] transition-colors flex items-center justify-center gap-2 text-sm"
           >
             View Recommended Products
             <span>→</span>

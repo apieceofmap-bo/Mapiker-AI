@@ -137,7 +137,7 @@ export default function QualityReportPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
@@ -146,10 +146,10 @@ export default function QualityReportPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -161,12 +161,12 @@ export default function QualityReportPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">🔍</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">
           Project not found
         </h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -178,27 +178,27 @@ export default function QualityReportPage() {
   if (isSuccess) {
     return (
       <div className="max-w-2xl mx-auto text-center py-16">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
+        <div className="w-20 h-20 bg-[rgba(15,123,108,0.15)] rounded-full flex items-center justify-center text-4xl text-[#0f7b6c] mx-auto mb-6">
           ✓
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl font-bold text-[#37352f] mb-4">
           Quote Request Submitted!
         </h2>
-        <p className="text-gray-600 mb-8">
+        <p className="text-[#787774] mb-8">
           Thank you for your interest in our Quality Report. Our sales team will
-          review your request and contact you at <strong>{contactEmail}</strong>{" "}
+          review your request and contact you at <strong className="text-[#37352f]">{contactEmail}</strong>{" "}
           within 1-2 business days.
         </p>
         <div className="flex items-center justify-center gap-4">
           <Link
             href={`/project/${projectId}`}
-            className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#f7f6f3] hover:bg-[#e9e9e7] text-[#37352f] font-medium rounded-md transition-colors"
           >
             Back to Project
           </Link>
           <Link
             href="/dashboard"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors"
           >
             Go to Dashboard
           </Link>
@@ -211,35 +211,35 @@ export default function QualityReportPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/dashboard" className="hover:text-gray-700">
+        <div className="flex items-center gap-2 text-sm text-[#787774] mb-2">
+          <Link href="/dashboard" className="hover:text-[#37352f]">
             Dashboard
           </Link>
           <span>/</span>
-          <Link href={`/project/${projectId}`} className="hover:text-gray-700">
+          <Link href={`/project/${projectId}`} className="hover:text-[#37352f]">
             {project.name}
           </Link>
           <span>/</span>
           <Link
             href={`/project/${projectId}/quality`}
-            className="hover:text-gray-700"
+            className="hover:text-[#37352f]"
           >
             Quality Evaluation
           </Link>
           <span>/</span>
-          <span className="text-gray-900">Quality Report</span>
+          <span className="text-[#37352f]">Quality Report</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-[#37352f]">
           Configure Quality Report
         </h1>
-        <p className="text-gray-500 mt-1">
+        <p className="text-[#787774] mt-1">
           Select countries and features to include in your quality analysis
           report
         </p>
       </div>
 
       {/* Stage Indicator */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={4} projectId={projectId} />
       </div>
 
@@ -247,7 +247,7 @@ export default function QualityReportPage() {
         {/* Left Column - Configuration */}
         <div className="lg:col-span-2 space-y-6">
           {/* Country Selection */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
             <CountrySelector
               selectedCountries={selectedCountries}
               onChange={setSelectedCountries}
@@ -255,7 +255,7 @@ export default function QualityReportPage() {
           </div>
 
           {/* Feature Selection */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
             <FeatureSelector
               selectedFeatures={selectedFeatures}
               onChange={setSelectedFeatures}
@@ -264,30 +264,30 @@ export default function QualityReportPage() {
           </div>
 
           {/* Contact Information */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h4 className="font-medium text-gray-900 mb-4">
+          <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
+            <h4 className="font-medium text-[#37352f] mb-4">
               Contact Information
             </h4>
             <div className="space-y-4">
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-[#37352f] mb-1"
                 >
-                  Email <span className="text-red-500">*</span>
+                  Email <span className="text-[#e03e3e]">*</span>
                 </label>
                 <input
                   id="email"
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
                 />
               </div>
               <div>
                 <label
                   htmlFor="company"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-[#37352f] mb-1"
                 >
                   Company Name
                 </label>
@@ -296,14 +296,14 @@ export default function QualityReportPage() {
                   type="text"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
                   placeholder="Your company name"
                 />
               </div>
               <div>
                 <label
                   htmlFor="notes"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="block text-sm font-medium text-[#37352f] mb-1"
                 >
                   Additional Notes
                 </label>
@@ -312,7 +312,7 @@ export default function QualityReportPage() {
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f] text-[#37352f]"
                   placeholder="Any specific requirements or questions..."
                 />
               </div>
@@ -333,7 +333,7 @@ export default function QualityReportPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!isValid || isSubmitting}
-                className="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-[#9b59b6] hover:bg-[#8e44ad] text-white font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -347,7 +347,7 @@ export default function QualityReportPage() {
                   </>
                 )}
               </button>
-              <p className="text-sm text-gray-500 text-center mt-3">
+              <p className="text-sm text-[#787774] text-center mt-3">
                 Our team will contact you with the final quote
               </p>
             </div>
@@ -355,7 +355,7 @@ export default function QualityReportPage() {
             {/* Back Link */}
             <Link
               href={`/project/${projectId}/quality`}
-              className="block text-center text-sm text-gray-500 hover:text-gray-700 mt-4"
+              className="block text-center text-sm text-[#787774] hover:text-[#37352f] mt-4"
             >
               ← Back to options
             </Link>

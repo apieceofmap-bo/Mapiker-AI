@@ -137,7 +137,7 @@ export default function PricingPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
@@ -146,10 +146,10 @@ export default function PricingPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">⚠️</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">{error}</h2>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -161,12 +161,12 @@ export default function PricingPage() {
     return (
       <div className="text-center py-20">
         <div className="text-4xl mb-4">🔍</div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">
           Project not found
         </h2>
         <Link
           href="/dashboard"
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="text-[#37352f] hover:underline font-medium"
         >
           Back to Dashboard
         </Link>
@@ -178,32 +178,32 @@ export default function PricingPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-          <Link href="/dashboard" className="hover:text-gray-700">
+        <div className="flex items-center gap-2 text-sm text-[#787774] mb-2">
+          <Link href="/dashboard" className="hover:text-[#37352f]">
             Dashboard
           </Link>
           <span>/</span>
-          <span className="text-gray-900">{project.name}</span>
+          <span className="text-[#37352f]">{project.name}</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#37352f]">{project.name}</h1>
+        <p className="text-[#787774] mt-1">
           {project.use_case_description || project.use_case}
         </p>
       </div>
 
       {/* Stage Indicator */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={3} projectId={projectId} />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-[#e9e9e7]">
         <button
           onClick={() => setActiveTab("calculator")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "calculator"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-[#37352f] text-[#37352f]"
+              : "border-transparent text-[#787774] hover:text-[#37352f]"
           }`}
         >
           Pricing Calculator
@@ -212,8 +212,8 @@ export default function PricingPage() {
           onClick={() => setActiveTab("comparison")}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === "comparison"
-              ? "border-blue-600 text-blue-600"
-              : "border-transparent text-gray-500 hover:text-gray-700"
+              ? "border-[#37352f] text-[#37352f]"
+              : "border-transparent text-[#787774] hover:text-[#37352f]"
           }`}
         >
           Vendor Comparison
@@ -232,7 +232,7 @@ export default function PricingPage() {
           <div className="flex justify-end">
             <button
               onClick={handleContinueToQuality}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2"
             >
               Continue to Quality Evaluation
               <span>→</span>
@@ -242,15 +242,15 @@ export default function PricingPage() {
       )}
 
       {/* Selected Products Summary */}
-      <div className="bg-gray-50 rounded-xl border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-900 mb-4">
+      <div className="bg-[#f7f6f3] rounded-lg border border-[#e9e9e7] p-6">
+        <h3 className="font-semibold text-[#37352f] mb-4">
           Selected Products ({selectedProducts.length})
         </h3>
         <div className="flex flex-wrap gap-2">
           {selectedProducts.map((product) => (
             <span
               key={product.id}
-              className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700"
+              className="px-3 py-1.5 bg-white border border-[#e9e9e7] rounded-full text-sm text-[#37352f]"
             >
               {product.provider} - {product.product_name}
             </span>

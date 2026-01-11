@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Project } from "@/lib/types";
 import ProjectCard from "./ProjectCard";
 
@@ -14,8 +15,11 @@ interface ProjectListProps {
 type FilterStatus = 'all' | 'draft' | 'in_progress' | 'completed' | 'quote_requested';
 
 export default function ProjectList({ projects, onDeleteProject, onRenameProject }: ProjectListProps) {
+  const router = useRouter();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set());
 
   const filteredProjects = filter === 'all'
     ? projects
@@ -32,6 +36,30 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleToggleCompare = (projectId: string) => {
+    setSelectedForCompare(prev => {
+      const next = new Set(prev);
+      if (next.has(projectId)) {
+        next.delete(projectId);
+      } else if (next.size < 3) {
+        next.add(projectId);
+      }
+      return next;
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedForCompare.size >= 2) {
+      const ids = Array.from(selectedForCompare).join(',');
+      router.push(`/compare?projects=${ids}`);
+    }
+  };
+
+  const handleCancelCompare = () => {
+    setCompareMode(false);
+    setSelectedForCompare(new Set());
   };
 
   const statusCounts = {
@@ -53,16 +81,16 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
   if (projects.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="text-6xl mb-4">🗺️</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className="text-5xl mb-4">🗺️</div>
+        <h3 className="text-lg font-semibold text-[#37352f] mb-2">
           No projects yet
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-[#787774] text-sm mb-6">
           Start by creating your first project to find the best map products for your needs.
         </p>
         <Link
           href="/project/new"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors text-sm"
         >
           <span>+</span>
           Create New Project
@@ -73,35 +101,73 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
 
   return (
     <div>
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
-        {filterButtons.map(({ key, label }) => (
+      {/* Filter Tabs & Compare Button */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1 overflow-x-auto pb-2">
+          {filterButtons.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              disabled={compareMode}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md whitespace-nowrap transition-colors ${
+                filter === key
+                  ? 'bg-[rgba(55,53,47,0.08)] text-[#37352f]'
+                  : 'text-[#787774] hover:bg-[rgba(55,53,47,0.04)] hover:text-[#37352f]'
+              } ${compareMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {label}
+              {statusCounts[key] > 0 && (
+                <span className={`ml-1.5 px-1.5 py-0.5 rounded text-xs ${
+                  filter === key ? 'bg-[#37352f] text-white' : 'bg-[#e9e9e7] text-[#787774]'
+                }`}>
+                  {statusCounts[key]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Compare Mode Controls */}
+        {!compareMode ? (
           <button
-            key={key}
-            onClick={() => setFilter(key)}
-            className={`px-4 py-2 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
-              filter === key
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
+            onClick={() => setCompareMode(true)}
+            disabled={projects.length < 2}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {label}
-            {statusCounts[key] > 0 && (
-              <span className="ml-2 px-2 py-0.5 bg-white rounded-full text-xs">
-                {statusCounts[key]}
-              </span>
-            )}
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Compare
           </button>
-        ))}
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#787774]">
+              {selectedForCompare.size}/3 selected
+            </span>
+            <button
+              onClick={handleCancelCompare}
+              className="px-3 py-1.5 text-sm font-medium text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)] rounded-md transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCompare}
+              disabled={selectedForCompare.size < 2}
+              className="px-3 py-1.5 text-sm font-medium bg-[#37352f] text-white rounded-md hover:bg-[#2f2d28] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Compare Selected
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Project Grid */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-[#787774]">
           No projects with status &ldquo;{filter.replace('_', ' ')}&rdquo;
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredProjects.map((project) => (
             <div
               key={project.id}
@@ -111,6 +177,10 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
                 project={project}
                 onDelete={onDeleteProject ? handleDelete : undefined}
                 onRename={onRenameProject}
+                compareMode={compareMode}
+                isSelectedForCompare={selectedForCompare.has(project.id)}
+                onToggleCompare={handleToggleCompare}
+                canSelectMore={selectedForCompare.size < 3}
               />
             </div>
           ))}

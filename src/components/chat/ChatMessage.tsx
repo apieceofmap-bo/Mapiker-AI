@@ -10,18 +10,18 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
+    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-3`}>
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[80%] rounded-lg px-4 py-3 ${
           isUser
-            ? "bg-blue-600 text-white rounded-br-md"
-            : "bg-gray-100 text-gray-800 rounded-bl-md"
+            ? "bg-[#37352f] text-white rounded-br-sm"
+            : "bg-[#f7f6f3] text-[#37352f] rounded-bl-sm"
         }`}
       >
         {!isUser && (
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg">🗺️</span>
-            <span className="text-xs font-medium text-gray-500">Mapiker-AI</span>
+            <span className="text-base">🗺️</span>
+            <span className="text-xs font-medium text-[#9b9a97]">Mapiker-AI</span>
           </div>
         )}
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>

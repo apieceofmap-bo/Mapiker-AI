@@ -44,12 +44,18 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes
   const protectedPaths = ['/dashboard', '/project']
+  // Public exceptions within protected paths (no auth required)
+  const publicPaths = ['/project/new']
+
+  const isPublicPath = publicPaths.some(path =>
+    request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
+  )
   const isProtectedPath = protectedPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
 
-  // If user is not authenticated and trying to access protected route
-  if (!user && isProtectedPath) {
+  // If user is not authenticated and trying to access protected route (excluding public paths)
+  if (!user && isProtectedPath && !isPublicPath) {
     const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)

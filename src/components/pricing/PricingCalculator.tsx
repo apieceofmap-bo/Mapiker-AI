@@ -123,12 +123,12 @@ export default function PricingCalculator({
 
   if (selectedProducts.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-8 text-center">
         <div className="text-4xl mb-4">💰</div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+        <h3 className="text-lg font-semibold text-[#37352f] mb-2">
           No products selected
         </h3>
-        <p className="text-gray-500">
+        <p className="text-[#787774]">
           Go back to select products to see pricing estimates
         </p>
       </div>
@@ -138,11 +138,11 @@ export default function PricingCalculator({
   return (
     <div className="space-y-6">
       {/* Monthly Requests Selector */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
+        <h3 className="text-lg font-semibold text-[#37352f] mb-4">
           Estimated Monthly Usage
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-[#787774] mb-4">
           Select your expected monthly API requests to calculate estimated costs
         </p>
 
@@ -152,34 +152,34 @@ export default function PricingCalculator({
             <button
               key={preset.value}
               onClick={() => handlePresetClick(preset.value)}
-              className={`px-4 py-3 rounded-lg border-2 transition-all ${
+              className={`px-4 py-3 rounded-md border-2 transition-all ${
                 activePreset === preset.value
-                  ? "border-blue-500 bg-blue-50 text-blue-700"
-                  : "border-gray-200 hover:border-gray-300 text-gray-700"
+                  ? "border-[#37352f] bg-[#f7f6f3] text-[#37352f]"
+                  : "border-[#e9e9e7] hover:border-[#d3d3d0] text-[#787774]"
               }`}
             >
               <div className="font-medium">{preset.label}</div>
-              <div className="text-xs text-gray-500">{preset.description}</div>
+              <div className="text-xs text-[#9b9a97]">{preset.description}</div>
             </button>
           ))}
         </div>
 
         {/* Custom Input */}
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600">Custom:</span>
+          <span className="text-sm text-[#787774]">Custom:</span>
           <input
             type="text"
             value={customRequests ? Number(customRequests).toLocaleString() : ""}
             onChange={handleCustomChange}
             placeholder="Enter custom amount"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
           />
-          <span className="text-sm text-gray-500">requests/month</span>
+          <span className="text-sm text-[#787774]">requests/month</span>
         </div>
 
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <div className="text-sm text-gray-600">
-            Calculating for: <span className="font-semibold text-gray-900">{formatNumber(monthlyRequests)}</span> requests per product per month
+        <div className="mt-4 p-3 bg-[#f7f6f3] rounded-md">
+          <div className="text-sm text-[#787774]">
+            Calculating for: <span className="font-semibold text-[#37352f]">{formatNumber(monthlyRequests)}</span> requests per product per month
           </div>
         </div>
       </div>
@@ -214,38 +214,38 @@ export default function PricingCalculator({
               </div>
 
               {/* Products */}
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-[#e9e9e7]">
                 {vendor.products.map((cost) => (
                   <div
                     key={cost.product.id}
                     className="px-6 py-4 flex items-center justify-between"
                   >
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-[#37352f]">
                         {cost.product.product_name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-[#787774]">
                         {cost.pricing.pricingModel === "per-request" && "Per request pricing"}
                         {cost.pricing.pricingModel === "per-session" && "Per session pricing"}
                         {cost.pricing.pricingModel === "per-asset" && "Per asset pricing"}
                         {cost.freeQuota > 0 && (
-                          <span className="ml-2 text-green-600">
+                          <span className="ml-2 text-[#0f7b6c]">
                             • {formatNumber(cost.freeQuota)} free/month
                           </span>
                         )}
                       </div>
                       {cost.pricing.notes && (
-                        <div className="text-xs text-amber-600 mt-1">
+                        <div className="text-xs text-[#b8860b] mt-1">
                           {cost.pricing.notes}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-gray-900">
+                      <div className="font-semibold text-[#37352f]">
                         {formatCurrency(cost.monthlyCost)}
                       </div>
                       {cost.freeQuota > 0 && cost.billableRequests > 0 && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-[#787774]">
                           {formatNumber(cost.billableRequests)} billable
                         </div>
                       )}
@@ -259,7 +259,7 @@ export default function PricingCalculator({
       </div>
 
       {/* Total Summary */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 text-white">
+      <div className="bg-[#37352f] rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold opacity-90">
@@ -288,12 +288,12 @@ export default function PricingCalculator({
       </div>
 
       {/* Disclaimer */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+      <div className="bg-[rgba(223,171,1,0.08)] border border-[rgba(223,171,1,0.2)] rounded-md p-4">
         <div className="flex gap-3">
-          <span className="text-amber-500 text-xl">⚠️</span>
+          <span className="text-[#b8860b] text-xl">⚠️</span>
           <div>
-            <h4 className="font-medium text-amber-800">Pricing Disclaimer</h4>
-            <p className="text-sm text-amber-700 mt-1">
+            <h4 className="font-medium text-[#b8860b]">Pricing Disclaimer</h4>
+            <p className="text-sm text-[#b8860b] mt-1">
               These are estimated costs based on publicly available pricing information.
               Actual costs may vary based on your specific usage patterns, contract terms,
               and vendor negotiations. Contact vendors directly for accurate quotes.
@@ -307,7 +307,7 @@ export default function PricingCalculator({
         <div className="flex justify-end">
           <button
             onClick={onContinue}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+            className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2"
           >
             Continue to Quality Evaluation
             <span>→</span>

@@ -4,6 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import HeroChat from "@/components/landing/HeroChat";
+import ProductShowcase from "@/components/landing/ProductShowcase";
+import DemoMatchingFlow from "@/components/landing/DemoMatchingFlow";
+import DemoMapPreview from "@/components/landing/DemoMapPreview";
+import DemoQualityEval from "@/components/landing/DemoQualityEval";
+import FinalCTA from "@/components/landing/FinalCTA";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -18,111 +24,69 @@ export default function LandingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="py-6 px-8 flex items-center justify-between max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 text-xl font-bold text-gray-800">
-          <span className="text-2xl">🗺️</span>
+      <header className="py-4 px-8 flex items-center justify-between max-w-7xl mx-auto border-b border-[#e9e9e7]">
+        <div className="flex items-center gap-2 text-lg font-semibold text-[#37352f]">
+          <span className="text-xl">🗺️</span>
           Mapiker-AI
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="text-gray-600 hover:text-gray-900 font-medium"
+            className="px-3 py-1.5 text-[#787774] hover:text-[#37352f] font-medium transition-colors"
           >
             Sign in
           </Link>
           <Link
             href="/signup"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors"
           >
             Get Started
           </Link>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-8 py-20">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Find the Perfect Map Products
-            <br />
-            <span className="text-blue-600">for Your Application</span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            AI-powered recommendations from 100+ map products across Google, HERE, Mapbox and more.
-            Get matched with the best solutions for your use case.
+      {/* Main Content */}
+      <main>
+        {/* Hero with Chat Input */}
+        <HeroChat />
+
+        {/* Product Types Showcase */}
+        <ProductShowcase />
+
+        {/* Demo Section Header */}
+        <section className="py-12 px-8 text-center bg-white">
+          <h2 className="text-3xl font-bold text-[#37352f] mb-2">
+            See How It Works
+          </h2>
+          <p className="text-[#787774]">
+            Explore our key features through interactive demos
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link
-              href="/project/new"
-              className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-lg"
-            >
-              Start Free Analysis
-            </Link>
-            <Link
-              href="/login"
-              className="px-8 py-4 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border border-gray-300 transition-colors text-lg"
-            >
-              Sign In
-            </Link>
-          </div>
-        </div>
+        </section>
 
-        {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-            <div className="text-4xl mb-4">💬</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              AI-Powered Chat
-            </h3>
-            <p className="text-gray-600">
-              Describe your requirements in natural language. Our AI understands your use case and extracts key features.
-            </p>
-          </div>
+        {/* Demo 1: Smart Product Matching */}
+        <DemoMatchingFlow />
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-            <div className="text-4xl mb-4">📦</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Smart Matching
-            </h3>
-            <p className="text-gray-600">
-              Get personalized recommendations from 100+ map products. Compare features, pricing, and coverage.
-            </p>
-          </div>
+        {/* Demo 2: Map & Code Preview */}
+        <DemoMapPreview />
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
-            <div className="text-4xl mb-4">📊</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Quality Reports
-            </h3>
-            <p className="text-gray-600">
-              Get detailed analysis reports comparing vendors across your target regions with accuracy benchmarks.
-            </p>
-          </div>
-        </div>
+        {/* Demo 3: Quality Evaluation */}
+        <DemoQualityEval />
 
-        {/* Vendors */}
-        <div className="text-center">
-          <p className="text-gray-500 mb-6">Covering products from leading providers</p>
-          <div className="flex items-center justify-center gap-12 opacity-60">
-            <span className="text-2xl font-semibold text-gray-700">Google</span>
-            <span className="text-2xl font-semibold text-gray-700">HERE</span>
-            <span className="text-2xl font-semibold text-gray-700">Mapbox</span>
-            <span className="text-2xl font-semibold text-gray-700">TomTom</span>
-          </div>
-        </div>
+        {/* Final CTA */}
+        <FinalCTA />
       </main>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-sm text-gray-500">
+      <footer className="py-8 text-center text-sm text-[#9b9a97] border-t border-[#e9e9e7] bg-white">
         &copy; {new Date().getFullYear()} A Piece of Map. All rights reserved.
       </footer>
     </div>
