@@ -183,9 +183,17 @@ export interface VendorPricingResponse {
   disclaimer: string;
 }
 
+export interface UsageMetrics {
+  requests: number;
+  mau?: number;
+  trips?: number;
+  destinations?: number;
+}
+
 export async function calculatePricing(
   productIds: string[],
-  monthlyRequests: number
+  monthlyRequests: number,
+  usageMetrics?: UsageMetrics
 ): Promise<BulkPricingResponse> {
   const response = await fetch(`${API_BASE_URL}/api/pricing/calculate`, {
     method: "POST",
@@ -195,6 +203,11 @@ export async function calculatePricing(
     body: JSON.stringify({
       product_ids: productIds,
       monthly_requests: monthlyRequests,
+      ...(usageMetrics && {
+        monthly_mau: usageMetrics.mau,
+        monthly_trips: usageMetrics.trips,
+        monthly_destinations: usageMetrics.destinations,
+      }),
     }),
   });
 
