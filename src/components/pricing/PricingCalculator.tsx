@@ -31,15 +31,12 @@ export default function PricingCalculator({
   selectedProducts,
   onContinue,
 }: PricingCalculatorProps) {
-  const [monthlyRequests, setMonthlyRequests] = useState(100000);
-  const [customRequests, setCustomRequests] = useState("");
   const [activePreset, setActivePreset] = useState<number | null>(100000);
   const [pricingData, setPricingData] = useState<BulkPricingResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Advanced mode state
-  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+  // Usage metrics for pricing calculation
   const [usageMetrics, setUsageMetrics] = useState<UsageMetrics>({
     requests: 100000,
     mau: 2000,
@@ -77,15 +74,11 @@ export default function PricingCalculator({
   useEffect(() => {
     const productIds = selectedProducts.map((p) => p.id);
     const timeoutId = setTimeout(() => {
-      if (isAdvancedMode) {
-        fetchPricing(productIds, usageMetrics.requests, usageMetrics);
-      } else {
-        fetchPricing(productIds, monthlyRequests);
-      }
+      fetchPricing(productIds, usageMetrics.requests, usageMetrics);
     }, 300); // Debounce 300ms
 
     return () => clearTimeout(timeoutId);
-  }, [selectedProducts, monthlyRequests, isAdvancedMode, usageMetrics, fetchPricing]);
+  }, [selectedProducts, usageMetrics, fetchPricing]);
 
   // Group products by vendor
   const vendorSummaries: VendorSummary[] = pricingData
@@ -114,23 +107,17 @@ export default function PricingCalculator({
     : [];
 
   const handlePresetClick = (value: number) => {
-    setMonthlyRequests(value);
+    setUsageMetrics(prev => ({ ...prev, requests: value }));
     setActivePreset(value);
-    setCustomRequests("");
-  };
-
-  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/,/g, "");
-    setCustomRequests(value);
-    setActivePreset(null);
-    if (value && !isNaN(Number(value))) {
-      setMonthlyRequests(Number(value));
-    }
   };
 
   const handleMetricChange = (field: keyof UsageMetrics, value: string) => {
     const numValue = parseInt(value.replace(/,/g, "")) || 0;
     setUsageMetrics(prev => ({ ...prev, [field]: numValue }));
+    // Clear preset selection when manually editing requests
+    if (field === "requests") {
+      setActivePreset(null);
+    }
   };
 
   const formatNumber = (num: number) => {
@@ -184,144 +171,91 @@ export default function PricingCalculator({
           Select your expected monthly API requests to calculate estimated costs
         </p>
 
-        {/* Mode Toggle */}
-        <div className="flex items-center gap-4 mb-4">
-          <button
-            onClick={() => setIsAdvancedMode(false)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              !isAdvancedMode
-                ? "bg-[#37352f] text-white"
-                : "bg-[#f7f6f3] text-[#787774] hover:bg-[#e9e9e7]"
-            }`}
-          >
-            Simple Mode
-          </button>
-          <button
-            onClick={() => setIsAdvancedMode(true)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              isAdvancedMode
-                ? "bg-[#37352f] text-white"
-                : "bg-[#f7f6f3] text-[#787774] hover:bg-[#e9e9e7]"
-            }`}
-          >
-            Advanced Mode
-          </button>
-          <span className="text-xs text-[#9b9a97]">
-            {isAdvancedMode ? "Specify MAU, trips, and requests separately" : "Use requests to estimate all metrics"}
-          </span>
+        {/* Preset Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {REQUEST_PRESETS.map((preset) => (
+            <button
+              key={preset.value}
+              onClick={() => handlePresetClick(preset.value)}
+              className={`px-4 py-3 rounded-md border-2 transition-all ${
+                activePreset === preset.value
+                  ? "border-[#37352f] bg-[#f7f6f3] text-[#37352f]"
+                  : "border-[#e9e9e7] hover:border-[#d3d3d0] text-[#787774]"
+              }`}
+            >
+              <div className="font-medium">{preset.label}</div>
+              <div className="text-xs text-[#9b9a97]">{preset.description}</div>
+            </button>
+          ))}
         </div>
 
-        {!isAdvancedMode ? (
-          <>
-            {/* Preset Buttons */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              {REQUEST_PRESETS.map((preset) => (
-                <button
-                  key={preset.value}
-                  onClick={() => handlePresetClick(preset.value)}
-                  className={`px-4 py-3 rounded-md border-2 transition-all ${
-                    activePreset === preset.value
-                      ? "border-[#37352f] bg-[#f7f6f3] text-[#37352f]"
-                      : "border-[#e9e9e7] hover:border-[#d3d3d0] text-[#787774]"
-                  }`}
-                >
-                  <div className="font-medium">{preset.label}</div>
-                  <div className="text-xs text-[#9b9a97]">{preset.description}</div>
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Input */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-[#787774]">Custom:</span>
+        {/* Custom Usage Inputs */}
+        <div className="border-t border-[#e9e9e7] pt-4">
+          <h4 className="text-sm font-medium text-[#37352f] mb-3">Custom Usage</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#37352f]">
+                Monthly API Requests
+              </label>
               <input
                 type="text"
-                value={customRequests ? Number(customRequests).toLocaleString() : ""}
-                onChange={handleCustomChange}
-                placeholder="Enter custom amount"
-                className="flex-1 px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
+                value={formatNumber(usageMetrics.requests)}
+                onChange={(e) => handleMetricChange("requests", e.target.value)}
+                className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
               />
-              <span className="text-sm text-[#787774]">requests/month</span>
+              <p className="text-xs text-[#9b9a97]">For API products with request-based pricing</p>
             </div>
 
-            <div className="mt-4 p-3 bg-[#f7f6f3] rounded-md">
-              <div className="text-sm text-[#787774]">
-                Calculating for:{" "}
-                <span className="font-semibold text-[#37352f]">
-                  {formatNumber(monthlyRequests)}
-                </span>{" "}
-                requests per product per month
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Advanced Mode Inputs */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#37352f]">
-                  Monthly Active Users (MAU)
-                </label>
-                <input
-                  type="text"
-                  value={formatNumber(usageMetrics.mau)}
-                  onChange={(e) => handleMetricChange("mau", e.target.value)}
-                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
-                />
-                <p className="text-xs text-[#9b9a97]">For SDK products with MAU-based pricing</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#37352f]">
-                  Monthly Trips
-                </label>
-                <input
-                  type="text"
-                  value={formatNumber(usageMetrics.trips)}
-                  onChange={(e) => handleMetricChange("trips", e.target.value)}
-                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
-                />
-                <p className="text-xs text-[#9b9a97]">For navigation products with trip-based pricing</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#37352f]">
-                  Monthly Destinations
-                </label>
-                <input
-                  type="text"
-                  value={formatNumber(usageMetrics.destinations)}
-                  onChange={(e) => handleMetricChange("destinations", e.target.value)}
-                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
-                />
-                <p className="text-xs text-[#9b9a97]">For route optimization products</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#37352f]">
-                  Monthly API Requests
-                </label>
-                <input
-                  type="text"
-                  value={formatNumber(usageMetrics.requests)}
-                  onChange={(e) => handleMetricChange("requests", e.target.value)}
-                  className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
-                />
-                <p className="text-xs text-[#9b9a97]">For API products with request-based pricing</p>
-              </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#37352f]">
+                Monthly Active Users (MAU)
+              </label>
+              <input
+                type="text"
+                value={formatNumber(usageMetrics.mau)}
+                onChange={(e) => handleMetricChange("mau", e.target.value)}
+                className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
+              />
+              <p className="text-xs text-[#9b9a97]">For SDK products with MAU-based pricing</p>
             </div>
 
-            <div className="mt-4 p-3 bg-[#f7f6f3] rounded-md">
-              <div className="text-sm text-[#787774]">
-                Calculating for:{" "}
-                <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.mau)}</span> MAU,{" "}
-                <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.trips)}</span> trips,{" "}
-                <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.destinations)}</span> destinations,{" "}
-                <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.requests)}</span> requests per month
-              </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#37352f]">
+                Monthly Trips
+              </label>
+              <input
+                type="text"
+                value={formatNumber(usageMetrics.trips)}
+                onChange={(e) => handleMetricChange("trips", e.target.value)}
+                className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
+              />
+              <p className="text-xs text-[#9b9a97]">For navigation products with trip-based pricing</p>
             </div>
-          </>
-        )}
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-[#37352f]">
+                Monthly Destinations
+              </label>
+              <input
+                type="text"
+                value={formatNumber(usageMetrics.destinations)}
+                onChange={(e) => handleMetricChange("destinations", e.target.value)}
+                className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
+              />
+              <p className="text-xs text-[#9b9a97]">For route optimization products</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-[#f7f6f3] rounded-md">
+          <div className="text-sm text-[#787774]">
+            Calculating for:{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.requests)}</span> requests,{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.mau)}</span> MAU,{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.trips)}</span> trips,{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.destinations)}</span> destinations per month
+          </div>
+        </div>
       </div>
 
       {/* Loading State */}
@@ -439,7 +373,7 @@ export default function PricingCalculator({
                   Estimated Total Monthly Cost
                 </h3>
                 <p className="text-sm opacity-75">
-                  Based on {formatNumber(monthlyRequests)} requests/product/month
+                  Based on {formatNumber(usageMetrics.requests)} requests/product/month
                 </p>
               </div>
               <div className="text-right">
