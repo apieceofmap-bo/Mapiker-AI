@@ -268,7 +268,10 @@ export default function PricingCalculator({
                             {getBillingUnitLabel(cost.billing_unit)}
                             {cost.free_tier_applied && (
                               <span className="ml-2 text-[#0f7b6c]">
-                                &#x2713; Free tier applied
+                                &#x2713; Free tier: {cost.free_tier ? `${formatNumber(cost.free_tier)} ${cost.billing_unit}s/mo` :
+                                  cost.tier_breakdown?.some(t => t.free_tier) ?
+                                    cost.tier_breakdown.filter(t => t.free_tier).map(t => `${formatNumber(t.free_tier!)} ${t.component}`).join(' + ') + '/mo' :
+                                    'applied'}
                               </span>
                             )}
                           </div>

@@ -17,6 +17,8 @@ interface VendorCategoryData {
   product: Product | null;
   monthlyCost: number | null;
   freeQuota: boolean;
+  freeTier: number | null;
+  billingUnit: string;
   contactSales: boolean;
 }
 
@@ -99,6 +101,8 @@ export default function VendorComparison({
             product,
             monthlyCost: pricing?.estimated_cost ?? null,
             freeQuota: pricing?.free_tier_applied ?? false,
+            freeTier: pricing?.free_tier ?? null,
+            billingUnit: pricing?.billing_unit ?? "request",
             contactSales: pricing?.contact_sales_required ?? false,
           };
         } else {
@@ -109,6 +113,8 @@ export default function VendorComparison({
             product: null,
             monthlyCost: null,
             freeQuota: false,
+            freeTier: null,
+            billingUnit: "request",
             contactSales: false,
           };
         }
@@ -291,7 +297,7 @@ export default function VendorComparison({
                             </div>
                             {data.freeQuota && (
                               <div className="text-xs text-[#0f7b6c]">
-                                Free tier applied
+                                Free: {data.freeTier ? `${formatNumber(data.freeTier)}/mo` : "applied"}
                               </div>
                             )}
                           </>

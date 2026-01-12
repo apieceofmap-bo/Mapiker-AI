@@ -153,6 +153,7 @@ export interface ProductCost {
   estimated_cost: number;
   free_tier_applied: boolean;
   contact_sales_required: boolean;
+  free_tier?: number | null;
   pricing_note?: string;
   tier_breakdown?: Array<{
     tier_range?: string;
@@ -160,6 +161,7 @@ export interface ProductCost {
     price_per_1000?: number;
     cost: number;
     component?: string;
+    free_tier?: number;
   }>;
   pricing_unavailable: boolean;
 }
