@@ -142,6 +142,8 @@ export default function PricingCalculator({
       load: "Per load",
       "MAU+trip": "Per MAU + trip",
       order: "Per order",
+      seat: "Per seat (MAU)",
+      "tileset hosting day + hosted tileset": "Per hosting day + tileset",
     };
     return labels[unit] || `Per ${unit}`;
   };
