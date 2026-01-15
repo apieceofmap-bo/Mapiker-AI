@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 const FLOW_STEPS = [
   {
     icon: "💬",
-    title: "Describe your needs",
-    description: "Tell us about your application in natural language",
+    title: "Describe what you want to develop",
+    description: "Tell us about your service in natural language",
   },
   {
     icon: "🔍",
@@ -17,14 +18,14 @@ const FLOW_STEPS = [
   {
     icon: "✨",
     title: "Get personalized matches",
-    description: "Receive tailored recommendations with pricing",
+    description: "Receive tailored recommendations with pricing and quality information",
   },
 ];
 
 const DEMO_MESSAGES = [
-  { type: "user", text: "I'm building a food delivery app with real-time tracking" },
-  { type: "ai", text: "Analyzing requirements... I'll help you find the best map products." },
-  { type: "ai", text: "Based on your needs, here are the top recommendations:" },
+  { type: "user", text: "I want to build a food delivery service with motor bikes." },
+  { type: "ai", text: "Okay, we recommend \"route-optimization\", \"geocoding\", \"points of interest\", \"ETA\", and \"real-time traffic\"." },
+  { type: "ai", text: "Based on your requirements, here are the optimized products. Check their prices and qualities." },
 ];
 
 export default function DemoMatchingFlow() {
@@ -97,21 +98,17 @@ export default function DemoMatchingFlow() {
               >
                 <span className="text-2xl">{step.icon}</span>
                 <div>
-                  <h4 className="font-semibold">{step.title}</h4>
+                  <h4
+                    className="font-semibold"
+                    style={{ color: currentStep === index ? '#ffffff' : '#37352f' }}
+                  >{step.title}</h4>
                   <p
-                    className={`text-sm ${
-                      currentStep === index ? "text-white/80" : "text-[#787774]"
-                    }`}
+                    className="text-sm"
+                    style={{ color: currentStep === index ? 'rgba(255,255,255,0.8)' : '#787774' }}
                   >
                     {step.description}
                   </p>
                 </div>
-                {currentStep === index && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="ml-auto w-2 h-2 bg-white rounded-full"
-                  />
-                )}
               </motion.div>
             ))}
           </div>
@@ -119,12 +116,7 @@ export default function DemoMatchingFlow() {
           {/* Right: Chat Preview */}
           <div className="bg-white rounded-xl border border-[#e9e9e7] overflow-hidden shadow-sm">
             <div className="px-4 py-3 bg-[#f7f6f3] border-b border-[#e9e9e7]">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[#e03e3e]" />
-                <div className="w-3 h-3 rounded-full bg-[#f2c94c]" />
-                <div className="w-3 h-3 rounded-full bg-[#0f7b6c]" />
-                <span className="ml-2 text-sm text-[#787774]">AI Chat</span>
-              </div>
+              <Image src="/logo.png" alt="Mapiker-AI" width={80} height={20} />
             </div>
 
             <div className="p-4 h-64 overflow-hidden">
