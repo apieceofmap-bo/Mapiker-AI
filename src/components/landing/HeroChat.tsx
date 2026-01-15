@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 const EXAMPLE_PROMPTS = [
@@ -67,8 +68,8 @@ export default function HeroChat() {
         >
           <div className="p-5">
             {/* Label */}
-            <div className="flex items-center gap-2 mb-3 text-left">
-              <span className="text-xl">🗺️</span>
+            <div className="flex items-center gap-3 mb-3 text-left">
+              <Image src="/logo.png" alt="Mapiker-AI" width={100} height={28} />
               <span className="text-sm font-medium text-[#787774]">
                 What kind of service are you building?
               </span>

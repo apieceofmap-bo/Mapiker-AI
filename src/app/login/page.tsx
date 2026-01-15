@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import LoginForm from "@/components/auth/LoginForm";
@@ -13,9 +14,8 @@ function LoginContent() {
     <div className="min-h-screen bg-[#f7f6f3] flex flex-col">
       {/* Header */}
       <header className="py-4 px-8">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-[#37352f]">
-          <span className="text-xl">🗺️</span>
-          Mapiker-AI
+        <Link href="/" className="flex items-center">
+          <Image src="/logo.png" alt="Mapiker-AI" width={120} height={32} />
         </Link>
       </header>
 

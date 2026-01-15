@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/components/auth/AuthProvider";
 import HeroChat from "@/components/landing/HeroChat";
 import ProductShowcase from "@/components/landing/ProductShowcase";
@@ -34,9 +35,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="py-4 px-8 flex items-center justify-between max-w-7xl mx-auto border-b border-[#e9e9e7]">
-        <div className="flex items-center gap-2 text-lg font-semibold text-[#37352f]">
-          <span className="text-xl">🗺️</span>
-          Mapiker-AI
+        <div className="flex items-center">
+          <Image src="/logo.png" alt="Mapiker-AI" width={120} height={32} />
         </div>
         <div className="flex items-center gap-3">
           <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -27,12 +28,8 @@ export default function Navbar() {
         <div className="flex justify-between h-14">
           {/* Logo and Nav Links */}
           <div className="flex">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 text-lg font-semibold text-[#37352f]"
-            >
-              <span className="text-xl">🗺️</span>
-              <span className="hidden sm:inline">Mapiker-AI</span>
+            <Link href="/" className="flex items-center">
+              <Image src="/logo.png" alt="Mapiker-AI" width={150} height={40} />
             </Link>
 
             <div className="hidden sm:ml-8 sm:flex sm:space-x-1">

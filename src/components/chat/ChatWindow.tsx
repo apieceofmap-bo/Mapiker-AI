@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { ChatMessage as ChatMessageType, Requirements } from "@/lib/types";
 import { sendChatMessage } from "@/lib/api";
 import ChatMessage from "./ChatMessage";
@@ -116,13 +117,8 @@ export default function ChatWindow({
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b border-[#e9e9e7]">
-        <div className="w-9 h-9 bg-[#f7f6f3] rounded-full flex items-center justify-center">
-          <span className="text-lg">🗺️</span>
-        </div>
-        <div>
-          <h2 className="font-semibold text-[#37352f] text-sm">Mapiker-AI</h2>
-          <p className="text-xs text-[#9b9a97]">Tell me about your project</p>
-        </div>
+        <Image src="/logo.png" alt="Mapiker-AI" width={100} height={28} />
+        <p className="text-xs text-[#9b9a97]">Tell me about your project</p>
       </div>
 
       {/* Messages */}
@@ -135,7 +131,7 @@ export default function ChatWindow({
           <div className="flex justify-start mb-4">
             <div className="bg-[#f7f6f3] rounded-lg rounded-bl-sm px-4 py-3">
               <div className="flex items-center gap-2">
-                <span className="text-base">🗺️</span>
+                <Image src="/logo.png" alt="Mapiker-AI" width={80} height={22} />
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 bg-[#9b9a97] rounded-full animate-bounce" />
                   <span

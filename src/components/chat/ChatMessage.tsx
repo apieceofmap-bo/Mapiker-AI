@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ChatMessage as ChatMessageType } from "@/lib/types";
 
 interface ChatMessageProps {
@@ -19,9 +20,8 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         }`}
       >
         {!isUser && (
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-base">🗺️</span>
-            <span className="text-xs font-medium text-[#9b9a97]">Mapiker-AI</span>
+          <div className="mb-1">
+            <Image src="/logo.png" alt="Mapiker-AI" width={80} height={22} />
           </div>
         )}
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
