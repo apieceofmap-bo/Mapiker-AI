@@ -1,115 +1,86 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
+import PhoneMockup from "./PhoneMockup";
+import MapAnimation from "./MapAnimation";
+import ServiceList from "./ServiceList";
 
-const PRODUCT_TYPES = [
-  {
-    icon: "🗺️",
-    title: "Map Data",
-    description: "Geocoding, Routing, Places, Traffic, and more",
-    features: ["Forward/Reverse Geocoding", "Route Optimization", "POI Search", "Real-time Traffic"],
-    color: "from-blue-50 to-blue-100",
-    borderColor: "border-blue-200",
-    hoverBorder: "hover:border-blue-300",
-  },
-  {
-    icon: "⚡",
-    title: "APIs",
-    description: "RESTful APIs for seamless integration",
-    features: ["REST & GraphQL", "Webhooks", "Batch Processing", "Real-time Streaming"],
-    color: "from-amber-50 to-amber-100",
-    borderColor: "border-amber-200",
-    hoverBorder: "hover:border-amber-300",
-  },
-  {
-    icon: "📦",
-    title: "SDKs",
-    description: "Native SDKs for all platforms",
-    features: ["iOS & Android", "Web/JavaScript", "React Native", "Flutter"],
-    color: "from-emerald-50 to-emerald-100",
-    borderColor: "border-emerald-200",
-    hoverBorder: "hover:border-emerald-300",
-  },
+const VENDORS = [
+  { name: "Google Maps", logo: "/logos/google-maps.png" },
+  { name: "HERE", logo: "/logos/here.png" },
+  { name: "Mapbox", logo: "/logos/mapbox.png" },
+  { name: "TomTom", logo: "/logos/tomtom.png" },
 ];
-
-const VENDORS = ["Google", "HERE", "Mapbox", "TomTom"];
 
 export default function ProductShowcase() {
   return (
-    <section className="py-20 px-8 bg-[#f7f6f3]">
-      <div className="max-w-5xl mx-auto">
-        {/* Section Header */}
+    <section className="py-24 px-8 bg-[#f7f6f3]">
+      <div className="max-w-6xl mx-auto">
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left - Phone Mockup with Animation */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="flex justify-center"
+          >
+            <PhoneMockup>
+              <MapAnimation />
+            </PhoneMockup>
+          </motion.div>
+
+          {/* Right - Service List */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.15 }}
+          >
+            <ServiceList />
+          </motion.div>
+        </div>
+
+        {/* Vendor Logos - Notion Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="mt-20 pt-8"
         >
-          <h2 className="text-3xl font-bold text-[#37352f] mb-3">
-            We Help You Find the Right
-          </h2>
-          <p className="text-2xl font-bold text-[#787774]">
-            Map Data, APIs & SDKs
-          </p>
-        </motion.div>
-
-        {/* Product Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {PRODUCT_TYPES.map((product, index) => (
-            <motion.div
-              key={product.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className={`bg-gradient-to-br ${product.color} rounded-xl p-6 border-2 ${product.borderColor} ${product.hoverBorder} transition-all cursor-default`}
-            >
-              <div className="text-4xl mb-4">{product.icon}</div>
-              <h3 className="text-xl font-bold text-[#37352f] mb-2">
-                {product.title}
-              </h3>
-              <p className="text-sm text-[#787774] mb-4">{product.description}</p>
-
-              <ul className="space-y-2">
-                {product.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm text-[#37352f]"
-                  >
-                    <span className="text-[#0f7b6c]">✓</span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Vendor Logos */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-center"
-        >
-          <p className="text-sm text-[#9b9a97] mb-4">
-            Covering products from leading providers
-          </p>
-          <div className="flex items-center justify-center gap-8 md:gap-12">
+          <div className="flex items-center justify-center gap-10 md:gap-14 flex-wrap">
             {VENDORS.map((vendor, index) => (
-              <motion.span
-                key={vendor}
+              <motion.div
+                key={vendor.name}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                className="text-lg font-semibold text-[#9b9a97] hover:text-[#37352f] transition-colors"
+                transition={{ duration: 0.3, delay: 0.4 + index * 0.08 }}
+                className="relative h-6 w-20 flex items-center justify-center grayscale opacity-40 hover:opacity-70 hover:grayscale-0 transition-all duration-300"
               >
-                {vendor}
-              </motion.span>
+                <Image
+                  src={vendor.logo}
+                  alt={vendor.name}
+                  width={80}
+                  height={24}
+                  className="object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                    const fallback = target.nextElementSibling as HTMLElement;
+                    if (fallback) fallback.style.display = "block";
+                  }}
+                />
+                <span
+                  className="hidden text-sm font-medium text-[#9b9a97]"
+                  style={{ display: "none" }}
+                >
+                  {vendor.name}
+                </span>
+              </motion.div>
             ))}
           </div>
         </motion.div>

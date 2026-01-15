@@ -38,9 +38,9 @@ export default function HeroChat() {
           transition={{ duration: 0.6 }}
           className="text-4xl md:text-5xl font-bold text-[#37352f] mb-4 leading-tight"
         >
-          Find the Perfect Map Products
+          AI Agent Finds the Perfect Map Products
           <br />
-          <span className="text-[#787774]">for Your Application</span>
+          <span className="text-[#787774]">for Your Location-Based Service</span>
         </motion.h1>
 
         {/* Subtitle */}
