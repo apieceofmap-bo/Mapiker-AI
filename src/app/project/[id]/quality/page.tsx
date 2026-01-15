@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase";
 import { Project } from "@/lib/types";
 import StageIndicator from "@/components/dashboard/StageIndicator";
+import ConfidentialBanner from "@/components/common/ConfidentialBanner";
+import { logAccess } from "@/lib/accessLog";
 
 export default function QualityEvaluationPage() {
   const params = useParams();
@@ -56,6 +58,13 @@ export default function QualityEvaluationPage() {
 
     fetchProject();
   }, [projectId, user, authLoading, router]);
+
+  // Log page view when project is loaded
+  useEffect(() => {
+    if (project && user) {
+      logAccess("quality_eval", projectId, "view");
+    }
+  }, [project, user, projectId]);
 
   if (authLoading || loading) {
     return (
@@ -122,6 +131,9 @@ export default function QualityEvaluationPage() {
       <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={4} projectId={projectId} />
       </div>
+
+      {/* Confidential Banner */}
+      <ConfidentialBanner />
 
       {/* Options */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

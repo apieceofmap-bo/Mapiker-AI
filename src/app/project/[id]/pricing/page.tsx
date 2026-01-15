@@ -9,6 +9,8 @@ import { Project, Product, Category, MatchResponse, SelectionState, EnvironmentS
 import StageIndicator from "@/components/dashboard/StageIndicator";
 import PricingCalculator from "@/components/pricing/PricingCalculator";
 import VendorComparison from "@/components/pricing/VendorComparison";
+import ConfidentialBanner from "@/components/common/ConfidentialBanner";
+import { logAccess } from "@/lib/accessLog";
 
 export default function PricingPage() {
   const params = useParams();
@@ -59,6 +61,13 @@ export default function PricingPage() {
 
     fetchProject();
   }, [projectId, user, authLoading, router]);
+
+  // Log page view when project is loaded
+  useEffect(() => {
+    if (project && user) {
+      logAccess("pricing", projectId, "view");
+    }
+  }, [project, user, projectId]);
 
   // Extract selected products from project
   const selectedProducts = useMemo<Product[]>(() => {
@@ -195,6 +204,9 @@ export default function PricingPage() {
       <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={3} projectId={projectId} />
       </div>
+
+      {/* Confidential Banner */}
+      <ConfidentialBanner />
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-[#e9e9e7]">

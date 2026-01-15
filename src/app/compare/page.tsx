@@ -50,7 +50,7 @@ function CompareContent() {
 
         // Sort by the order in URL
         const sortedData = projectIds
-          .map((id) => data.find((p) => p.id === id))
+          .map((id) => data.find((p: Project) => p.id === id))
           .filter(Boolean) as Project[];
 
         setProjects(sortedData);

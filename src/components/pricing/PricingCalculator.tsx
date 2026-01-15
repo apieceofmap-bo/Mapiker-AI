@@ -214,7 +214,7 @@ export default function PricingCalculator({
               </label>
               <input
                 type="text"
-                value={formatNumber(usageMetrics.mau)}
+                value={formatNumber(usageMetrics.mau ?? 0)}
                 onChange={(e) => handleMetricChange("mau", e.target.value)}
                 className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
               />
@@ -227,7 +227,7 @@ export default function PricingCalculator({
               </label>
               <input
                 type="text"
-                value={formatNumber(usageMetrics.trips)}
+                value={formatNumber(usageMetrics.trips ?? 0)}
                 onChange={(e) => handleMetricChange("trips", e.target.value)}
                 className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
               />
@@ -240,7 +240,7 @@ export default function PricingCalculator({
               </label>
               <input
                 type="text"
-                value={formatNumber(usageMetrics.destinations)}
+                value={formatNumber(usageMetrics.destinations ?? 0)}
                 onChange={(e) => handleMetricChange("destinations", e.target.value)}
                 className="w-full px-4 py-2 border border-[#e9e9e7] rounded-md focus:ring-1 focus:ring-[#37352f] focus:border-[#37352f]"
               />
@@ -253,9 +253,9 @@ export default function PricingCalculator({
           <div className="text-sm text-[#787774]">
             Calculating for:{" "}
             <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.requests)}</span> requests,{" "}
-            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.mau)}</span> MAU,{" "}
-            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.trips)}</span> trips,{" "}
-            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.destinations)}</span> destinations per month
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.mau ?? 0)}</span> MAU,{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.trips ?? 0)}</span> trips,{" "}
+            <span className="font-semibold text-[#37352f]">{formatNumber(usageMetrics.destinations ?? 0)}</span> destinations per month
           </div>
         </div>
       </div>

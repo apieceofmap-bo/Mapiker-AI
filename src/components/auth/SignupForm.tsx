@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "./AuthProvider";
+import NDAModal from "./NDAModal";
 
 interface SignupFormProps {
   redirectTo?: string;
@@ -19,6 +20,8 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [agreedToNDA, setAgreedToNDA] = useState(false);
+  const [showNDAModal, setShowNDAModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,10 +37,17 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
       return;
     }
 
+    if (!agreedToNDA) {
+      setError("Please agree to the confidentiality agreement");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { error } = await signUp(email, password);
+      const { error } = await signUp(email, password, {
+        nda_agreed_at: new Date().toISOString(),
+      });
       if (error) {
         setError(error.message);
       } else {
@@ -155,6 +165,27 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
         />
       </div>
 
+      {/* Confidentiality Agreement Checkbox */}
+      <div className="flex items-start gap-3">
+        <input
+          id="nda-agreement"
+          type="checkbox"
+          checked={agreedToNDA}
+          onChange={(e) => setAgreedToNDA(e.target.checked)}
+          className="mt-1 w-4 h-4 text-[#37352f] border-[#e9e9e7] rounded focus:ring-[#37352f]"
+        />
+        <label htmlFor="nda-agreement" className="text-sm text-[#37352f]">
+          I agree to keep all pricing and quality report information confidential.{" "}
+          <button
+            type="button"
+            onClick={() => setShowNDAModal(true)}
+            className="text-[#2f81f7] hover:underline"
+          >
+            View Agreement
+          </button>
+        </label>
+      </div>
+
       <button
         type="submit"
         disabled={loading || googleLoading}
@@ -205,6 +236,9 @@ export default function SignupForm({ redirectTo = "/dashboard" }: SignupFormProp
           Sign in
         </Link>
       </p>
+
+      {/* NDA Modal */}
+      <NDAModal isOpen={showNDAModal} onClose={() => setShowNDAModal(false)} />
     </form>
   );
 }

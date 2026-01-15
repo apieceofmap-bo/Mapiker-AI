@@ -11,6 +11,8 @@ import StageIndicator from "@/components/dashboard/StageIndicator";
 import CountrySelector from "@/components/quality/CountrySelector";
 import FeatureSelector from "@/components/quality/FeatureSelector";
 import QualityReportPricing from "@/components/quality/QualityReportPricing";
+import ConfidentialBanner from "@/components/common/ConfidentialBanner";
+import { logAccess } from "@/lib/accessLog";
 
 export default function QualityReportPage() {
   const params = useParams();
@@ -75,6 +77,13 @@ export default function QualityReportPage() {
     fetchProject();
   }, [projectId, user, authLoading, router]);
 
+  // Log page view when project is loaded
+  useEffect(() => {
+    if (project && user) {
+      logAccess("quality_report", projectId, "view");
+    }
+  }, [project, user, projectId]);
+
   const handleSubmit = async () => {
     if (!user || !project) return;
     if (selectedCountries.length === 0 || selectedFeatures.length === 0) return;
@@ -119,6 +128,13 @@ export default function QualityReportPage() {
           status: "quote_requested",
         })
         .eq("id", projectId);
+
+      // Log the submission
+      await logAccess("quality_report", projectId, "submit", {
+        countries: selectedCountries,
+        features: selectedFeatures,
+        total_price: totalPrice,
+      });
 
       setIsSuccess(true);
     } catch (err) {
@@ -242,6 +258,9 @@ export default function QualityReportPage() {
       <div className="bg-white rounded-lg border border-[#e9e9e7] p-6">
         <StageIndicator currentStage={4} projectId={projectId} />
       </div>
+
+      {/* Confidential Banner */}
+      <ConfidentialBanner />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Configuration */}
