@@ -64,9 +64,6 @@ export default function DemoMapPreview() {
           transition={{ duration: 0.6 }}
           className="text-center mb-4"
         >
-          <span className="inline-block px-3 py-1 bg-[rgba(15,123,108,0.1)] text-[#0f7b6c] text-sm font-medium rounded-full mb-4">
-            Demo 2
-          </span>
           <h2 className="text-3xl font-bold text-[#37352f] mb-3">
             Map & Code Preview
           </h2>

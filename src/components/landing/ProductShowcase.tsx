@@ -7,10 +7,10 @@ import MapAnimation from "./MapAnimation";
 import ServiceList from "./ServiceList";
 
 const VENDORS = [
-  { name: "Google Maps", logo: "/logos/google-maps.png" },
-  { name: "HERE", logo: "/logos/here.png" },
-  { name: "Mapbox", logo: "/logos/mapbox.png" },
-  { name: "TomTom", logo: "/logos/tomtom.png" },
+  { name: "Google Maps", logo: "/logos/google-maps.png", width: 60 },
+  { name: "HERE", logo: "/logos/here.png", width: 44 },
+  { name: "Mapbox", logo: "/logos/mapbox.png", width: 80 },
+  { name: "TomTom", logo: "/logos/tomtom.png", width: 80 },
 ];
 
 export default function ProductShowcase() {
@@ -59,12 +59,13 @@ export default function ProductShowcase() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: 0.4 + index * 0.08 }}
-                className="relative h-6 w-20 flex items-center justify-center grayscale opacity-40 hover:opacity-70 hover:grayscale-0 transition-all duration-300"
+                className="relative h-6 flex items-center justify-center grayscale opacity-40 hover:opacity-70 hover:grayscale-0 transition-all duration-300"
+                style={{ width: vendor.width }}
               >
                 <Image
                   src={vendor.logo}
                   alt={vendor.name}
-                  width={80}
+                  width={vendor.width}
                   height={24}
                   className="object-contain"
                   onError={(e) => {

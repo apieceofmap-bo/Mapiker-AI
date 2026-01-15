@@ -64,9 +64,6 @@ export default function DemoMatchingFlow() {
           transition={{ duration: 0.6 }}
           className="text-center mb-4"
         >
-          <span className="inline-block px-3 py-1 bg-[rgba(46,170,220,0.1)] text-[#2eaadc] text-sm font-medium rounded-full mb-4">
-            Demo 1
-          </span>
           <h2 className="text-3xl font-bold text-[#37352f] mb-3">
             Smart Product Matching
           </h2>

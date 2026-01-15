@@ -44,9 +44,6 @@ export default function DemoQualityEval() {
           transition={{ duration: 0.6 }}
           className="text-center mb-4"
         >
-          <span className="inline-block px-3 py-1 bg-[rgba(155,89,182,0.1)] text-[#9b59b6] text-sm font-medium rounded-full mb-4">
-            Demo 3
-          </span>
           <h2 className="text-3xl font-bold text-[#37352f] mb-3">
             Map Quality Evaluation
           </h2>

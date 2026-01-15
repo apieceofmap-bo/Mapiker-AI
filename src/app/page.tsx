@@ -62,16 +62,6 @@ export default function LandingPage() {
         {/* Product Types Showcase */}
         <ProductShowcase />
 
-        {/* Demo Section Header */}
-        <section className="py-12 px-8 text-center bg-white">
-          <h2 className="text-3xl font-bold text-[#37352f] mb-2">
-            See How It Works
-          </h2>
-          <p className="text-[#787774]">
-            Explore our key features through interactive demos
-          </p>
-        </section>
-
         {/* Demo 1: Smart Product Matching */}
         <DemoMatchingFlow />
 
