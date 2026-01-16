@@ -15,7 +15,7 @@ const VENDORS = [
 
 export default function ProductShowcase() {
   return (
-    <section className="py-24 px-8 bg-[#f7f6f3]">
+    <section className="py-12 px-4 sm:py-24 sm:px-8 bg-[#f7f6f3]">
       <div className="max-w-6xl mx-auto">
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

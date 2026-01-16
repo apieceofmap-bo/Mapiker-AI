@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -32,6 +32,7 @@ export default function DemoMatchingFlow() {
   const [currentStep, setCurrentStep] = useState(0);
   const [typingIndex, setTypingIndex] = useState(0);
   const [showMessages, setShowMessages] = useState<number[]>([]);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto-advance animation
   useEffect(() => {
@@ -54,8 +55,15 @@ export default function DemoMatchingFlow() {
     return () => clearTimeout(timer);
   }, [showMessages]);
 
+  // Auto-scroll to bottom when new messages appear
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [showMessages]);
+
   return (
-    <section className="py-20 px-8">
+    <section className="py-12 px-4 sm:py-20 sm:px-8">
       <div className="max-w-5xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -119,7 +127,7 @@ export default function DemoMatchingFlow() {
               <Image src="/logo.png" alt="Mapiker-AI" width={80} height={20} />
             </div>
 
-            <div className="p-4 h-64 overflow-hidden">
+            <div ref={chatContainerRef} className="p-4 h-64 overflow-y-auto scroll-smooth">
               <AnimatePresence>
                 {showMessages.map((msgIndex) => {
                   const msg = DEMO_MESSAGES[msgIndex];

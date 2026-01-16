@@ -81,7 +81,7 @@ export default function DemoMapPreview() {
   };
 
   return (
-    <section className="py-20 px-8 bg-[#f7f6f3]">
+    <section className="py-12 px-4 sm:py-20 sm:px-8 bg-[#f7f6f3]">
       <div className="max-w-5xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -121,13 +121,13 @@ export default function DemoMapPreview() {
               <div className="px-4 py-3 bg-[#f7f6f3] border-b border-[#e9e9e7]">
                 <span className="text-sm font-medium text-[#37352f]">Map Preview</span>
               </div>
-              <div className="h-72 relative overflow-hidden">
+              <div className="h-48 sm:h-72 relative overflow-hidden">
                 {/* Static Map Image with Route */}
                 <Image
                   src="/images/map-preview-tokyo.png?v=3"
                   alt="Map Preview - Tokyo Route"
                   fill
-                  className="object-cover"
+                  className="object-contain sm:object-cover"
                   unoptimized
                 />
               </div>

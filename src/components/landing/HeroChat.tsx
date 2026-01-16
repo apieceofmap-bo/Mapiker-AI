@@ -29,7 +29,7 @@ export default function HeroChat() {
   };
 
   return (
-    <section className="py-20 px-8">
+    <section className="py-12 px-4 sm:py-20 sm:px-8">
       <div className="max-w-3xl mx-auto text-center">
         {/* Title */}
         <motion.h1
@@ -68,28 +68,28 @@ export default function HeroChat() {
         >
           <div className="p-5">
             {/* Label */}
-            <div className="flex items-center gap-3 mb-3 text-left">
-              <Image src="/logo.png" alt="Mapiker-AI" width={100} height={28} />
-              <span className="text-sm font-medium text-[#787774]">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 text-left">
+              <Image src="/logo.png" alt="Mapiker-AI" width={80} height={22} className="flex-shrink-0 sm:w-[100px] sm:h-[28px]" />
+              <span className="text-xs sm:text-sm font-medium text-[#787774]">
                 What kind of service are you building?
               </span>
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSubmit} className="flex gap-3">
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder="I'm building a food delivery app that needs real-time tracking..."
-                className="flex-1 px-4 py-3 text-[#37352f] placeholder-[#9b9a97] bg-[#f7f6f3] rounded-lg border border-[#e9e9e7] focus:outline-none focus:border-[#37352f] focus:bg-white transition-all"
+                placeholder="I'm building a food delivery app..."
+                className="w-full sm:flex-1 px-4 py-3 text-[#37352f] placeholder-[#9b9a97] bg-[#f7f6f3] rounded-lg border border-[#e9e9e7] focus:outline-none focus:border-[#37352f] focus:bg-white transition-all"
               />
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="px-5 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="w-full sm:w-auto px-5 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <span>Start</span>
                 <span>→</span>
