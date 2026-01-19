@@ -75,9 +75,9 @@ export interface MatchResponse {
   required_features: string[];
 }
 
-// Selection state
+// Selection state - supports single or multiple product selection per category
 export interface SelectionState {
-  [categoryId: string]: string | null; // category_id -> product_id
+  [categoryId: string]: string | string[] | null; // category_id -> product_id or array of product_ids
 }
 
 // ========================================

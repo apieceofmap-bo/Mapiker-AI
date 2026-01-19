@@ -11,8 +11,18 @@ interface EnvironmentSectionProps {
   selections: SelectionState;
   expandedCategories: Set<string>;
   onToggleCategory: (categoryId: string) => void;
-  onSelectionChange: (categoryId: string, productId: string | null) => void;
+  onSelectionChange: (categoryId: string, productId: string, isSelected: boolean) => void;
   recommendedProvider: string | null;
+}
+
+/**
+ * Gets the array of selected product IDs for a category from SelectionState.
+ */
+function getSelectedProductIds(selections: SelectionState, categoryId: string): string[] {
+  const value = selections[categoryId];
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
 }
 
 export default function EnvironmentSection({
@@ -70,10 +80,10 @@ export default function EnvironmentSection({
             <CategoryGroup
               key={`${environment}-${category.id}`}
               category={category}
-              selectedProductId={selections[category.id] || null}
+              selectedProductIds={getSelectedProductIds(selections, category.id)}
               isExpanded={expandedCategories.has(`${environment}-${category.id}`)}
               onToggle={() => onToggleCategory(`${environment}-${category.id}`)}
-              onSelect={(productId) => onSelectionChange(category.id, productId)}
+              onSelect={(productId, isSelected) => onSelectionChange(category.id, productId, isSelected)}
               recommendedProvider={recommendedProvider}
               environment={environment}
             />

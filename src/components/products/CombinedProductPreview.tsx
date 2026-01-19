@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { MatchResponse, SelectionState, Product, Requirements, EnvironmentType, EnvironmentSelectionState } from "@/lib/types";
 import { isMultiEnvironmentRequest, filterCategoriesByEnvironment, ENVIRONMENT_SECTIONS } from "@/lib/environmentDetector";
 import CategoryGroup from "./CategoryGroup";
@@ -9,10 +9,53 @@ import EmbedCode from "../preview/EmbedCode";
 import EmailReportModal from "../EmailReportModal";
 import MapPreview from "../preview/MapPreview";
 
+/**
+ * Parses selection state to handle both legacy suffixed keys (categoryId_0, categoryId_1)
+ * and new array-based values. Returns a Map of categoryId -> array of productIds.
+ */
+function parseSelectionKeys(selections: SelectionState): Map<string, string[]> {
+  const categoryProducts = new Map<string, string[]>();
+
+  Object.entries(selections).forEach(([key, value]) => {
+    if (!value) return;
+
+    // Extract base category ID by removing numeric suffix (e.g., "category_0" -> "category")
+    const parts = key.split('_');
+    const lastPart = parts[parts.length - 1];
+    const baseKey = /^\d+$/.test(lastPart) && parts.length > 1
+      ? parts.slice(0, -1).join('_')
+      : key;
+
+    if (!categoryProducts.has(baseKey)) {
+      categoryProducts.set(baseKey, []);
+    }
+
+    // Handle both array and single string values
+    if (Array.isArray(value)) {
+      categoryProducts.get(baseKey)!.push(...value);
+    } else {
+      categoryProducts.get(baseKey)!.push(value);
+    }
+  });
+
+  return categoryProducts;
+}
+
+/**
+ * Gets the array of selected product IDs for a category from SelectionState.
+ * Handles both string and string[] values.
+ */
+function getSelectedProductIds(selections: SelectionState, categoryId: string): string[] {
+  const value = selections[categoryId];
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
+}
+
 interface CombinedProductPreviewProps {
   matchResult: MatchResponse;
   selections: SelectionState | EnvironmentSelectionState;
-  onSelectionChange: (categoryId: string, productId: string | null, environment?: EnvironmentType) => void;
+  onSelectionChange: (categoryId: string, productId: string, isSelected: boolean, environment?: EnvironmentType) => void;
   onBack: () => void;
   onResetSelections?: () => void;
   requirements?: Requirements | null;
@@ -91,39 +134,52 @@ export default function CombinedProductPreview({
       backendCategories.filter(c => c.required).every(c => (selections as EnvironmentSelectionState).backend?.[c.id])
     : selectedRequiredCount === requiredCategories.length;
 
+  // Parse selections to handle both legacy suffixed keys and array values
+  const parsedSelections = useMemo(() => {
+    if (isMultiEnvironment) {
+      return {
+        mobile: parseSelectionKeys((selections as EnvironmentSelectionState).mobile || {}),
+        backend: parseSelectionKeys((selections as EnvironmentSelectionState).backend || {}),
+      };
+    }
+    return { single: parseSelectionKeys(selections as SelectionState) };
+  }, [selections, isMultiEnvironment]);
+
   // Get selected products (with deduplication by product ID)
   const selectedProductsMap = new Map<string, Product>();
   if (isMultiEnvironment) {
     const envSelections = selections as EnvironmentSelectionState;
     // Mobile products
     mobileCategories.forEach((category) => {
-      const selectedId = envSelections.mobile?.[category.id];
-      if (selectedId) {
+      const selectedIds = getSelectedProductIds(envSelections.mobile || {}, category.id);
+      selectedIds.forEach((selectedId) => {
         const product = category.products.find((p) => p.id === selectedId);
         if (product && !selectedProductsMap.has(product.id)) {
           selectedProductsMap.set(product.id, product);
         }
-      }
+      });
     });
     // Backend products
     backendCategories.forEach((category) => {
-      const selectedId = envSelections.backend?.[category.id];
-      if (selectedId) {
+      const selectedIds = getSelectedProductIds(envSelections.backend || {}, category.id);
+      selectedIds.forEach((selectedId) => {
         const product = category.products.find((p) => p.id === selectedId);
         if (product && !selectedProductsMap.has(product.id)) {
           selectedProductsMap.set(product.id, product);
         }
-      }
+      });
     });
   } else {
+    // Handle both legacy suffixed keys and array values
+    const categorySelections = parsedSelections.single || parseSelectionKeys(selections as SelectionState);
     matchResult.categories.forEach((category) => {
-      const selectedId = (selections as SelectionState)[category.id];
-      if (selectedId) {
+      const selectedIds = categorySelections.get(category.id) || getSelectedProductIds(selections as SelectionState, category.id);
+      selectedIds.forEach((selectedId) => {
         const product = category.products.find((p) => p.id === selectedId);
         if (product && !selectedProductsMap.has(product.id)) {
           selectedProductsMap.set(product.id, product);
         }
-      }
+      });
     });
   }
   const selectedProducts = Array.from(selectedProductsMap.values());
@@ -291,8 +347,8 @@ export default function CombinedProductPreview({
                   selections={getSelectionsForEnv('mobile')}
                   expandedCategories={expandedCategories}
                   onToggleCategory={toggleCategory}
-                  onSelectionChange={(categoryId, productId) =>
-                    onSelectionChange(categoryId, productId, 'mobile')
+                  onSelectionChange={(categoryId, productId, isSelected) =>
+                    onSelectionChange(categoryId, productId, isSelected, 'mobile')
                   }
                   recommendedProvider={recommendedProvider}
                 />
@@ -304,24 +360,30 @@ export default function CombinedProductPreview({
                   selections={getSelectionsForEnv('backend')}
                   expandedCategories={expandedCategories}
                   onToggleCategory={toggleCategory}
-                  onSelectionChange={(categoryId, productId) =>
-                    onSelectionChange(categoryId, productId, 'backend')
+                  onSelectionChange={(categoryId, productId, isSelected) =>
+                    onSelectionChange(categoryId, productId, isSelected, 'backend')
                   }
                   recommendedProvider={recommendedProvider}
                 />
               </>
             ) : (
-              matchResult.categories.map((category) => (
-                <CategoryGroup
-                  key={category.id}
-                  category={category}
-                  selectedProductId={(selections as SelectionState)[category.id]}
-                  isExpanded={expandedCategories.has(category.id)}
-                  onToggle={() => toggleCategory(category.id)}
-                  onSelect={(productId) => onSelectionChange(category.id, productId)}
-                  recommendedProvider={recommendedProvider}
-                />
-              ))
+              matchResult.categories.map((category) => {
+                const categorySelections = parsedSelections.single?.get(category.id) ||
+                  getSelectedProductIds(selections as SelectionState, category.id);
+                return (
+                  <CategoryGroup
+                    key={category.id}
+                    category={category}
+                    selectedProductIds={categorySelections}
+                    isExpanded={expandedCategories.has(category.id)}
+                    onToggle={() => toggleCategory(category.id)}
+                    onSelect={(productId, isSelected) => {
+                      onSelectionChange(category.id, productId, isSelected);
+                    }}
+                    recommendedProvider={recommendedProvider}
+                  />
+                );
+              })
             )}
           </div>
         </div>

@@ -81,23 +81,55 @@ export default function ProductsPage() {
     }
   };
 
-  const handleSelectionChange = (categoryId: string, productId: string | null, environment?: EnvironmentType) => {
+  /**
+   * Gets the array of selected product IDs for a category from SelectionState.
+   */
+  const getSelectedProductIds = (state: SelectionState, categoryId: string): string[] => {
+    const value = state[categoryId];
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    return [value];
+  };
+
+  const handleSelectionChange = (categoryId: string, productId: string, isSelected: boolean, environment?: EnvironmentType) => {
     if (project?.is_multi_environment && environment) {
       setSelections((prev) => {
         const envSelections = prev as EnvironmentSelectionState;
+        const currentEnvState = envSelections[environment] || {};
+        const currentIds = getSelectedProductIds(currentEnvState, categoryId);
+
+        let newIds: string[];
+        if (isSelected) {
+          newIds = currentIds.includes(productId) ? currentIds : [...currentIds, productId];
+        } else {
+          newIds = currentIds.filter(id => id !== productId);
+        }
+
         return {
           ...envSelections,
           [environment]: {
-            ...envSelections[environment],
-            [categoryId]: productId,
+            ...currentEnvState,
+            [categoryId]: newIds.length > 0 ? newIds : null,
           },
         };
       });
     } else {
-      setSelections((prev) => ({
-        ...prev,
-        [categoryId]: productId,
-      }));
+      setSelections((prev) => {
+        const currentState = prev as SelectionState;
+        const currentIds = getSelectedProductIds(currentState, categoryId);
+
+        let newIds: string[];
+        if (isSelected) {
+          newIds = currentIds.includes(productId) ? currentIds : [...currentIds, productId];
+        } else {
+          newIds = currentIds.filter(id => id !== productId);
+        }
+
+        return {
+          ...currentState,
+          [categoryId]: newIds.length > 0 ? newIds : null,
+        };
+      });
     }
   };
 

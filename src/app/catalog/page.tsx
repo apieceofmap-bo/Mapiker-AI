@@ -99,10 +99,10 @@ export default function CatalogPage() {
 
     const selectedProductObjects = getSelectedProductObjects();
 
-    // Group products by sub_category to create categories
+    // Group products by feature_category to create categories
     const categoryMap: Record<string, CatalogProduct[]> = {};
     selectedProductObjects.forEach((product) => {
-      const categoryName = product.sub_category || "Other";
+      const categoryName = product.feature_category || product.sub_category || "Other";
       if (!categoryMap[categoryName]) {
         categoryMap[categoryName] = [];
       }
@@ -145,15 +145,10 @@ export default function CatalogPage() {
       required_features: [],
     };
 
-    // Build selection state: use unique keys for all selected products
-    // Format: categoryId or categoryId_index -> productId
+    // Build selection state: store all products as array per category
     const selectionState: SelectionState = {};
     categories.forEach((category) => {
-      category.products.forEach((product, index) => {
-        // First product uses category ID, rest use categoryId_index
-        const key = index === 0 ? category.id : `${category.id}_${index}`;
-        selectionState[key] = product.id;
-      });
+      selectionState[category.id] = category.products.map((p) => p.id);
     });
 
     // Create project in Supabase

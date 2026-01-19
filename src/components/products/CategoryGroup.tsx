@@ -6,24 +6,25 @@ import ProductCard from "./ProductCard";
 
 interface CategoryGroupProps {
   category: Category;
-  selectedProductId: string | null;
+  selectedProductIds: string[];  // Changed: supports multiple selections
   isExpanded: boolean;
   onToggle: () => void;
-  onSelect: (productId: string | null) => void;
+  onSelect: (productId: string, isSelected: boolean) => void;  // Changed: toggle-based
   recommendedProvider?: string | null;
   environment?: EnvironmentType;  // Optional: for multi-environment mode sorting
 }
 
 export default function CategoryGroup({
   category,
-  selectedProductId,
+  selectedProductIds,
   isExpanded,
   onToggle,
   onSelect,
   recommendedProvider = null,
   environment,
 }: CategoryGroupProps) {
-  const hasSelection = selectedProductId !== null;
+  const hasSelection = selectedProductIds.length > 0;
+  const selectionCount = selectedProductIds.length;
 
   // Get environment priority for sorting (SDK first for mobile, API first for backend)
   const getEnvironmentPriority = (dataFormat: string, productName: string): number => {
@@ -113,12 +114,12 @@ export default function CategoryGroup({
         <div className="flex items-center gap-2">
           {hasSelection && (
             <span className="px-3 py-1 bg-[rgba(15,123,108,0.15)] text-[#0f7b6c] text-sm font-medium rounded-full">
-              ✓ Selected
+              ✓ {selectionCount} selected
             </span>
           )}
           {category.required && !hasSelection && (
             <span className="px-3 py-1 bg-[rgba(223,171,1,0.15)] text-[#b8860b] text-sm font-medium rounded-full">
-              Select 1
+              Select products
             </span>
           )}
         </div>
@@ -127,18 +128,19 @@ export default function CategoryGroup({
       {/* Products List */}
       {isExpanded && (
         <div className="border-t border-[#e9e9e7] p-4 space-y-3">
-          {sortedProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              isSelected={selectedProductId === product.id}
-              onSelect={() =>
-                onSelect(selectedProductId === product.id ? null : product.id)
-              }
-              selectionType={category.required ? "radio" : "checkbox"}
-              isRecommended={recommendedProvider === product.provider && recommendedProvider !== null}
-            />
-          ))}
+          {sortedProducts.map((product) => {
+            const isSelected = selectedProductIds.includes(product.id);
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isSelected={isSelected}
+                onSelect={() => onSelect(product.id, !isSelected)}
+                selectionType="checkbox"
+                isRecommended={recommendedProvider === product.provider && recommendedProvider !== null}
+              />
+            );
+          })}
         </div>
       )}
     </div>

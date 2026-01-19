@@ -8,9 +8,19 @@ import CategoryGroup from "./CategoryGroup";
 interface ProductSelectionProps {
   matchResult: MatchResponse;
   selections: SelectionState;
-  onSelectionChange: (categoryId: string, productId: string | null) => void;
+  onSelectionChange: (categoryId: string, productId: string, isSelected: boolean) => void;
   onPreview: () => void;
   onBack: () => void;
+}
+
+/**
+ * Gets the array of selected product IDs for a category from SelectionState.
+ */
+function getSelectedProductIds(selections: SelectionState, categoryId: string): string[] {
+  const value = selections[categoryId];
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  return [value];
 }
 
 export default function ProductSelection({
@@ -39,7 +49,7 @@ export default function ProductSelection({
   // Count required categories and selected
   const requiredCategories = matchResult.categories.filter((c) => c.required);
   const selectedRequiredCount = requiredCategories.filter(
-    (c) => selections[c.id] !== null
+    (c) => getSelectedProductIds(selections, c.id).length > 0
   ).length;
 
   const allRequiredSelected = selectedRequiredCount === requiredCategories.length;
@@ -128,10 +138,10 @@ export default function ProductSelection({
           <CategoryGroup
             key={category.id}
             category={category}
-            selectedProductId={selections[category.id]}
+            selectedProductIds={getSelectedProductIds(selections, category.id)}
             isExpanded={expandedCategories.has(category.id)}
             onToggle={() => toggleCategory(category.id)}
-            onSelect={(productId) => onSelectionChange(category.id, productId)}
+            onSelect={(productId, isSelected) => onSelectionChange(category.id, productId, isSelected)}
           />
         ))}
       </div>

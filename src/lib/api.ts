@@ -283,6 +283,7 @@ export interface CatalogProduct {
   provider: string;
   product_name: string;
   sub_category: string;
+  feature_category?: string;
   product_group: string;
   description: string;
   key_features: string[];

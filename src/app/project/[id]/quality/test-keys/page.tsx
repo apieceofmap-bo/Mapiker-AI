@@ -79,30 +79,12 @@ export default function TestKeysPage() {
     const products: Product[] = [];
     const addedIds = new Set<string>();
 
-    // Handle multi-environment selections
-    if (project.is_multi_environment) {
-      const envSelections = selections as EnvironmentSelectionState;
-      ["mobile", "backend"].forEach((env) => {
-        const envSel = envSelections[env as keyof EnvironmentSelectionState];
-        if (envSel) {
-          Object.values(envSel).forEach((productId) => {
-            if (productId && !addedIds.has(productId)) {
-              const product = matchResult.categories
-                .flatMap((c) => c.products)
-                .find((p) => p.id === productId);
-              if (product) {
-                products.push(product);
-                addedIds.add(productId);
-              }
-            }
-          });
-        }
-      });
-    } else {
-      // Single environment
-      const singleSelections = selections as SelectionState;
-      Object.values(singleSelections).forEach((productId) => {
-        if (productId && !addedIds.has(productId)) {
+    // Helper to process product IDs (handles both string and string[] values)
+    const processProductIds = (value: string | string[] | null) => {
+      if (!value) return;
+      const ids = Array.isArray(value) ? value : [value];
+      ids.forEach((productId) => {
+        if (!addedIds.has(productId)) {
           const product = matchResult.categories
             .flatMap((c) => c.products)
             .find((p) => p.id === productId);
@@ -112,6 +94,21 @@ export default function TestKeysPage() {
           }
         }
       });
+    };
+
+    // Handle multi-environment selections
+    if (project.is_multi_environment) {
+      const envSelections = selections as EnvironmentSelectionState;
+      ["mobile", "backend"].forEach((env) => {
+        const envSel = envSelections[env as keyof EnvironmentSelectionState];
+        if (envSel) {
+          Object.values(envSel).forEach(processProductIds);
+        }
+      });
+    } else {
+      // Single environment
+      const singleSelections = selections as SelectionState;
+      Object.values(singleSelections).forEach(processProductIds);
     }
 
     return products;
