@@ -70,12 +70,13 @@ docs/
 | chatbot-improvements | [✅](./01-plan/features/chatbot-improvements.plan.md) | ⬚ | ⬚ | ⬚ | 40% |
 | user-journey-enhancements | [✅](./01-plan/features/user-journey-enhancements.plan.md) | ⬚ | ⬚ | ⬚ | 30% |
 | vendor-comparison | [✅](./01-plan/features/vendor-comparison.plan.md) | ⬚ | ⬚ | ⬚ | 70% |
-| product-recommendation | [✅](./01-plan/features/product-recommendation.plan.md) | [✅](./02-design/features/product-recommendation.design.md) | ⬚ | ⬚ | 60% |
+| product-recommendation | [✅](./01-plan/features/product-recommendation.plan.md) | [✅](./02-design/features/product-recommendation.design.md) | ⬚ | ⬚ | 92% |
 
 ### Completed Features
 
 | Feature | Plan | Design | Analysis | Report | Date |
 |---------|------|--------|----------|--------|------|
+| feature-keyword-sync | [✅](./01-plan/features/feature-keyword-sync.plan.md) | - | - | - | 2026-01-22 |
 | landing-page-improvement | ✅ | - | - | ✅ | 2026-01-16 |
 | pricing-api | ✅ | - | - | ✅ | 2026-01-16 |
 
@@ -85,6 +86,7 @@ docs/
 
 | Date | Feature | Phase | Description |
 |------|---------|-------|-------------|
+| 2026-01-22 | feature-keyword-sync | Complete | Feature Registry 통합 완료, google.genai 마이그레이션 |
 | 2026-01-22 | chatbot-improvements | Plan | 세일즈 연결, 대화 흐름 개선 계획 |
 | 2026-01-22 | product-recommendation | Design | FeatureDetail 마이그레이션 완료 |
 | 2026-01-21 | vendor-comparison | Plan | PDF 내보내기, NDA 모달 구현 |

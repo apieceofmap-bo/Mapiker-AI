@@ -213,6 +213,7 @@ Section: [섹션 번호]
 
 | Feature | Date |
 |---------|------|
+| feature-keyword-sync | 2026-01-22 |
 | landing-page-improvement | 2026-01-16 |
 | pricing-api | 2026-01-16 |
 
