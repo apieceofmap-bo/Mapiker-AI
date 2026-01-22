@@ -981,8 +981,132 @@ def test_backend_api_priority():
 
 ---
 
+## 9. Feature Synchronization Architecture
+
+### 9.1 Overview
+
+Feature 키워드 동기화 시스템은 Quality-Evaluator와 파이프라인 전체의 Feature 데이터 일관성을 보장합니다.
+
+### 9.2 Feature Data Flow
+
+```
+Quality-Evaluator (External)
+        │
+        │ product_feature_report.json
+        ▼
+┌─────────────────────────────────────────────────────────────┐
+│           feature_registry.json (Primary Source)            │
+│                                                             │
+│  • standard_features (전체 Feature 목록)                    │
+│  • product_features (제품별 Feature 매핑)                   │
+│  • db_feature_mappings (Feature 동의어/변형)               │
+│  • use_case_features (Use Case별 Feature 추천)             │
+│  • vendor_product_hints (Vendor-Product 매핑)              │
+│  • categories (Feature 카테고리 분류)                       │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+                          │ sync_feature_registry.py
+                          │
+    ┌─────────────────────┼─────────────────────┐
+    │                     │                     │
+    ▼                     ▼                     ▼
+┌─────────────┐   ┌─────────────────┐   ┌──────────────────┐
+│ Product_    │   │ Backend Python  │   │ Frontend TS      │
+│ Dsc_All.json│   │ Modules         │   │                  │
+│             │   │ (런타임 로드)   │   │ featureRegistry  │
+│ features[]  │   │                 │   │ .ts (자동 생성)  │
+│ 필드 동기화 │   │ prompts.py      │   │                  │
+│             │   │ pipeline_v2.py  │   │ qualityEvaluation│
+│             │   │ chat_agent.py   │   │ Options.ts       │
+└─────────────┘   └─────────────────┘   └──────────────────┘
+```
+
+### 9.3 Registry Item Connections
+
+| Registry 항목 | 동기화 대상 파일 | 사용 방식 |
+|--------------|-----------------|----------|
+| **standard_features** | `featureRegistry.ts` | Feature 목록 타입 생성 |
+| **product_features** | `Product_Dsc_All.json` | 제품별 `features[]` 필드 동기화 |
+| **db_feature_mappings** | `improved_pipeline_v2.py` | 표준 Feature → DB 변형 이름 매핑 |
+| **use_case_features** | `chat_agent.py` | 사용 사례별 필수/선택 Feature 추천 |
+| **vendor_product_hints** | `prompts.py` | Feature별 벤더 제품 힌트 |
+| **categories** | `qualityEvaluationOptions.ts` | QA 평가용 Feature 카테고리 |
+
+### 9.4 Target File Roles in Pipeline
+
+| 파일 | 파이프라인 역할 |
+|------|---------------|
+| **Product_Dsc_All.json** | 제품 DB - Agent1/2/3가 제품 검색/매칭 시 참조 |
+| **improved_pipeline_v2.py** | 파이프라인 코어 - Feature 변형 이름 매칭 |
+| **chat_agent.py** | 챗봇 - 사용 사례별 Feature 자동 추천 |
+| **prompts.py** | LLM 프롬프트 - Feature→제품 힌트 제공 |
+| **featureRegistry.ts** | FE 타입 - Feature 표시 일관성 |
+| **qualityEvaluationOptions.ts** | 품질 평가 - Feature 카테고리 그룹화 |
+
+### 9.5 Pipeline Feature Usage Flow
+
+```
+User Message
+     │
+     ▼
+┌─────────────────┐
+│   Chat Agent    │ ←── use_case_features (사용 사례별 Feature 추천)
+│ (요구사항 수집)  │
+└────────┬────────┘
+         │ extracted features
+         ▼
+┌─────────────────┐
+│  Agent 1: RAG   │ ←── Product_Dsc_All.json (제품별 features 검색)
+│ (후보 제품 선별) │
+└────────┬────────┘
+         │ candidate products
+         ▼
+┌─────────────────┐
+│  Agent 2: Match │ ←── db_feature_mappings (Feature 변형 매칭)
+│ (Feature 매칭)   │     vendor_product_hints (LLM 힌트)
+└────────┬────────┘
+         │ scored products
+         ▼
+┌─────────────────┐
+│ Agent 3: Scorer │ ←── Product_Dsc_All.json (Feature Coverage 계산)
+│  (최종 순위)     │
+└────────┬────────┘
+         │
+         ▼
+    Frontend       ←── featureRegistry.ts (Feature 표시)
+                       qualityEvaluationOptions.ts (품질 평가)
+```
+
+### 9.6 Feature Naming Convention
+
+| Format | Usage | Example |
+|--------|-------|---------|
+| Title Case | Standard name (display) | "Forward Geocoding" |
+| kebab-case | ID (internal) | "forward-geocoding" |
+| DB variations | Matching aliases | "Geocoding", "Geocode API" |
+
+### 9.7 Synchronization Workflow
+
+```bash
+# Quality-Evaluator 업데이트 후 - 단일 명령으로 전체 동기화
+python scripts/sync_feature_registry.py
+
+# dry-run으로 미리보기
+python scripts/sync_feature_registry.py --dry-run
+```
+
+| Component | Sync Method | Trigger |
+|-----------|-------------|---------|
+| feature_registry.json | Direct from QE | Manual |
+| Product_Dsc_All.json | From registry | Auto with registry |
+| Backend modules | Runtime load | Server start |
+| featureRegistry.ts | Generated | Auto with registry |
+
+---
+
 ## Version History
 
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 1.0 | 2026-01-22 | Initial design | Claude Code |
+| 1.1 | 2026-01-22 | Added Feature Synchronization Architecture (Section 9) | Claude Code |
