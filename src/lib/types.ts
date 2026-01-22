@@ -80,6 +80,9 @@ export interface Category {
   required: boolean;
   description: string;
   products: Product[];
+  // Auto-recommendation for Map Display when API-only products are selected
+  auto_recommended?: boolean;
+  auto_recommend_reason?: string;
 }
 
 export interface FeatureCoverage {

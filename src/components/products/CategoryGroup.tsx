@@ -103,6 +103,11 @@ export default function CategoryGroup({
                   Optional
                 </span>
               )}
+              {category.auto_recommended && (
+                <span className="px-2 py-0.5 bg-[rgba(223,171,1,0.15)] text-[#b8860b] text-xs font-medium rounded">
+                  💡 {category.auto_recommend_reason || "Recommended"}
+                </span>
+              )}
             </div>
             <p className="text-sm text-[#787774]">
               {category.products.length} product{category.products.length !== 1 ? "s" : ""} available
