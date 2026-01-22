@@ -9,12 +9,14 @@
 > **Progress:**
 > - ✅ **Phase 4 (P0)**: Duplicate Feature Elimination - COMPLETE
 > - ✅ **Phase 1 (P1)**: Vehicle Type Support - COMPLETE
+> - ✅ **Phase 1.1 (P0)**: Vehicle Type Boost 버그 수정 - COMPLETE (2026-01-23)
 > - ✅ **Phase 3 (P1)**: SDK/API Priority - COMPLETE
 > - ✅ **Phase 2 (P2)**: Similar API Differentiation - COMPLETE
-> - 🔄 **Phase 8 (P0)**: Unified Feature System Migration - IN PROGRESS
+> - ✅ **Phase 8.1 (P0)**: db_feature_mappings 자동 생성 - COMPLETE (2026-01-23)
+> - ✅ **Phase 6 (P2)**: Map Display Auto-Recommendation - COMPLETE (2026-01-23)
+> - 🔄 **Phase 8 (P0)**: Unified Feature System Migration - IN PROGRESS (92%)
 > - 🆕 **Phase 7 (P0)**: Loading Time Optimization - PENDING
 > - 🆕 **Phase 5 (P1)**: Application Filter Fix (SDK vs API) - PENDING
-> - 🆕 **Phase 6 (P2)**: Map Display Auto-Recommendation - PENDING
 
 ---
 
@@ -819,6 +821,13 @@ def filter(self, use_case, application_environment, regional_coverage,
 
 ### 9.2 Phase 6: Map Display 자동 추천
 
+> **Status**: ✅ COMPLETE (2026-01-23)
+>
+> **구현 위치**: `services/product_matcher.py`
+> - `_should_auto_add_map_display()` - SDK 유무 확인
+> - `_apply_auto_map_display()` - auto_recommended=True 적용
+> - `_add_map_display_products()` - Map Display 제품 추가
+
 **문제:**
 - Maps SDK나 Navigation SDK를 선택하지 않은 경우, Routing/Search API들은 배경 지도를 포함하지 않음
 - 사용자가 별도로 Map Display 요청하지 않아도 Optional Features로 자동 추천되어야 함
@@ -1133,7 +1142,7 @@ async def match_products_streaming(request: RequirementsRequest):
 | **Routing & Navigation** | Point-to-Point Routing | A→B 경로 계산 | All ✓ |
 | | Matrix Routing | M×N 거리/시간 매트릭스 | All ✓ |
 | | Isochrone / Isoline Routing | 도달권 분석 | HERE ✓, Mapbox ✓, Google ✗ |
-| | Route Optimization (TSP/VRP) | 경로 최적화, 차량 경로 문제 | All ✓ |
+| | Route Optimization | 경로 최적화, 차량 경로 문제 | All ✓ |
 | | Map Matching | GPS 트레이스 → 도로 스냅 | All ✓ |
 | | EV Routing | 전기차 전용 경로 (충전소 포함) | Google ✓, HERE ✓, Mapbox ✗ |
 | | Truck Routing | 트럭 전용 경로 (제한 고려) | HERE ✓, Google △, Mapbox △ |
@@ -1214,7 +1223,7 @@ USE_CASE_FEATURES = {
 # 신규 (표준 Feature, Feature Matrix 기반)
 USE_CASE_FEATURES = {
     "food-delivery": {
-        "required": ["Real-time Tracking", "Route Optimization (TSP/VRP)", "Forward Geocoding", "Traffic Flow"],
+        "required": ["Real-time Tracking", "Route Optimization", "Forward Geocoding", "Traffic Flow"],
         "optional": ["Geofencing", "POI Search & Discovery"]
     },
     "ride-hailing": {
@@ -1222,11 +1231,11 @@ USE_CASE_FEATURES = {
         "optional": ["Traffic Flow", "POI Search & Discovery"]
     },
     "logistics": {
-        "required": ["Route Optimization (TSP/VRP)", "Fleet Tracking", "Forward Geocoding", "Truck Routing"],
+        "required": ["Route Optimization", "Fleet Tracking", "Forward Geocoding", "Truck Routing"],
         "optional": ["Traffic Flow", "Geofencing", "Toll Calculation"]
     },
     "fleet-management": {
-        "required": ["Fleet Tracking", "Route Optimization (TSP/VRP)", "Geofencing"],
+        "required": ["Fleet Tracking", "Route Optimization", "Geofencing"],
         "optional": ["Traffic Flow", "Toll Calculation"]
     },
     "store-locator": {
@@ -1239,14 +1248,14 @@ USE_CASE_FEATURES = {
     },
     "e-commerce": {
         "required": ["Forward Geocoding", "Address Validation", "Geofencing"],
-        "optional": ["Route Optimization (TSP/VRP)", "Traffic Flow"]
+        "optional": ["Route Optimization", "Traffic Flow"]
     },
     "public-transport": {
         "required": ["Point-to-Point Routing", "Traffic Flow", "Vector Tiles"],
         "optional": ["Isochrone / Isoline Routing"]
     },
     "field-service": {
-        "required": ["Route Optimization (TSP/VRP)", "Forward Geocoding", "Real-time Tracking"],
+        "required": ["Route Optimization", "Forward Geocoding", "Real-time Tracking"],
         "optional": ["Geofencing", "Traffic Flow"]
     },
     "other": {
@@ -1282,7 +1291,7 @@ PRECOMPUTED_FEATURE_MAPPINGS = {
     "Point-to-Point Routing": ["Car Routing", "Route Calculation", "Directions", "Routing"],
     "Matrix Routing": ["Matrix Routing", "Distance Matrix", "Route Matrix"],
     "Isochrone / Isoline Routing": ["Isoline Routing", "Isochrone"],
-    "Route Optimization (TSP/VRP)": ["Route Optimization", "Waypoint Sequencing", "Tour Planning", "Fleet Routing"],
+    "Route Optimization": ["Route Optimization", "Waypoint Sequencing", "Tour Planning", "Fleet Routing"],
     "Map Matching": ["Map Matching", "Route Matching"],
     "EV Routing": ["Electric Vehicle (EV) Routing", "EV Route Calculation"],
     "Truck Routing": ["Truck Routing", "Vehicle Restrictions", "HGV Routing"],
@@ -1310,6 +1319,36 @@ PRECOMPUTED_FEATURE_MAPPINGS = {
     "Elevation Data": ["Elevation data retrieval", "Sampled elevation data along paths"]
 }
 ```
+
+#### 11.5.2.1 db_feature_mappings 자동 생성 (✅ 완료 - 2026-01-23)
+
+**문제점:**
+- 기존 db_feature_mappings에 171개 변형만 정의
+- Product DB의 828개 Feature 중 73개(8.8%)만 교차
+- 제품 추천 시 대부분의 Feature가 매칭되지 않음
+
+**해결책:**
+- `scripts/generate_feature_mappings.py` 스크립트 작성
+- Gemini API (gemini-2.5-flash)를 사용하여 828개 Product Feature를 29개 Standard Feature에 자동 매핑
+- 배치 처리 (80개/배치)로 755개 미매핑 Feature 분류
+
+**결과:**
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| 커버리지 | 8.8% | 74.9% | +66.1%p |
+| 매핑 값 수 | 171 | 718 | +547 |
+| 교차 Feature | 73 | 620 | +547 |
+| 미매핑 Feature | 755 | 208 | -547 |
+
+**수정 파일:**
+- `backend/data/feature_registry.json` - db_feature_mappings 확장 (171→718개)
+- `backend/scripts/generate_feature_mappings.py` - 신규 생성
+
+**추가 변경 (Route Optimization 이름 정리):**
+- "Route Optimization (TSP/VRP)" → "Route Optimization" 으로 통일
+- 수정 파일: feature_registry.json, improved_pipeline_v2.py, featureRegistry.ts, feature_registry_loader.py
+
+---
 
 #### 11.5.3 Feature 매칭 로직 수정
 

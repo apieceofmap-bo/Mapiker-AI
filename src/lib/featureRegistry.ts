@@ -122,7 +122,7 @@ export const STANDARD_FEATURES: StandardFeature[] = [
   },
   {
     "id": "route-optimization",
-    "name": "Route Optimization (TSP/VRP)",
+    "name": "Route Optimization",
     "category": "Routing & Navigation",
     "description": "Multi-stop route optimization",
     "aliases": ["tsp", "vrp", "waypoint-optimization", "tour-planning"]
