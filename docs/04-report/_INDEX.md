@@ -1,43 +1,154 @@
-# Completion Reports Index
+# Report Documents Index
 
-> **PDCA Phase**: Act (Report)
-> **Last Updated**: 2026-01-21
+> **Phase**: Act/Report (리포트)
+> **Last Updated**: 2026-01-22
+
+---
+
+## Purpose
+
+Report 문서는 PDCA 사이클의 마지막 단계로, 기능 완료 리포트와 학습 내용을 기록합니다.
+
+### Report 문서에 포함되는 내용
+
+- 구현 완료 요약
+- 주요 변경사항
+- 배운 점 (Lessons Learned)
+- 다음 사이클 피드백
+- 관련 문서 링크
 
 ---
 
 ## Document List
 
-| Document | Status | Last Modified | Description |
-|----------|--------|---------------|-------------|
-| [product-selection-improvement.report.md](./features/product-selection-improvement.report.md) | ✅ Complete | 2026-01-21 | Product Selection 멀티 선택 및 Feature Category |
-| [landing-page-improvement.report.md](./features/landing-page-improvement.report.md) | ✅ Complete | 2026-01-16 | 랜딩페이지 개선 완료 리포트 |
+### Completed Reports
+
+| Feature | Completion Date | PDCA Cycle |
+|---------|-----------------|------------|
+| [landing-page-improvement](./features/landing-page-improvement.report.md) | 2026-01-16 | #1 |
+| [pricing-api](./features/pricing-api.report.md) | 2026-01-16 | #1 |
+| [product-selection-improvement](./features/product-selection-improvement.report.md) | 2026-01-21 | #1 |
+
+### Pending Reports
+
+| Feature | Implementation Progress | Expected Completion |
+|---------|------------------------|---------------------|
+| chatbot-improvements | 40% | TBD |
+| user-journey-enhancements | 30% | TBD |
+| vendor-comparison | 70% | TBD |
+| product-recommendation | 60% | TBD |
 
 ---
 
-## Status Legend
+## Template
 
-| Status | Meaning | Description |
-|--------|---------|-------------|
-| ✅ Complete | Finalized | Review complete, reference baseline |
-| 🔄 In Progress | Working | Currently being written |
-| 👀 In Review | Pending Review | Awaiting review |
+새 Report 문서 작성 시 아래 템플릿을 사용합니다:
 
----
+```markdown
+# [Feature Name] Report
 
-## Completed PDCA Cycles
-
-| Cycle | Feature | Period | Completion Rate |
-|-------|---------|--------|-----------------|
-| #2 | product-selection-improvement | 2026-01-21 | 100% |
-| #1 | landing-page-improvement | 2026-01-16 | 100% |
+> **Summary**: [한 줄 요약]
+>
+> **Author**: Claude Code
+> **Date**: [YYYY-MM-DD]
+> **PDCA Cycle**: #N
+> **Status**: Complete
 
 ---
 
-## Related Links
+## 1. Overview
 
-| Phase | Folder | Description |
-|-------|--------|-------------|
-| Plan | [01-plan/](../01-plan/_INDEX.md) | Planning documents |
-| Design | [02-design/](../02-design/_INDEX.md) | Design documents |
-| Analysis | [03-analysis/](../03-analysis/_INDEX.md) | Analysis results |
-| Report | Current | Completion reports |
+### 1.1 Feature Summary
+[기능 요약]
+
+### 1.2 Timeline
+
+| Phase | Date | Duration |
+|-------|------|----------|
+| Plan | ... | ... |
+| Design | ... | ... |
+| Implementation | ... | ... |
+| Analysis | ... | ... |
+| Report | ... | ... |
+
+---
+
+## 2. Implementation Summary
+
+### 2.1 What Was Built
+[구현된 내용]
+
+### 2.2 File Changes
+
+| File | Action | Changes |
+|------|--------|---------|
+| ... | Created/Modified/Deleted | ... |
+
+### 2.3 Key Decisions
+[주요 결정사항]
+
+---
+
+## 3. Results
+
+### 3.1 Success Criteria Met
+
+| Criteria | Status |
+|----------|--------|
+| ... | ✅/❌ |
+
+### 3.2 Metrics
+
+| Metric | Before | After |
+|--------|--------|-------|
+| ... | ... | ... |
+
+---
+
+## 4. Lessons Learned
+
+### 4.1 What Went Well
+- ...
+
+### 4.2 What Could Be Improved
+- ...
+
+### 4.3 Technical Insights
+- ...
+
+---
+
+## 5. Follow-up Items
+
+### 5.1 Known Issues
+- ...
+
+### 5.2 Future Improvements
+- ...
+
+### 5.3 Related Features
+- ...
+
+---
+
+## 6. References
+
+- [Plan Document](../01-plan/features/[feature].plan.md)
+- [Design Document](../02-design/features/[feature].design.md)
+- [Analysis Document](../03-analysis/features/[feature].analysis.md)
+
+---
+
+## Version History
+
+| Version | Date | Changes | Author |
+|---------|------|---------|--------|
+| 1.0 | ... | Initial report | Claude Code |
+```
+
+---
+
+## Navigation
+
+- [← Analysis Documents](../03-analysis/_INDEX.md)
+- [→ Back to Index](../_INDEX.md)
