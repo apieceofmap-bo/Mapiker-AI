@@ -49,34 +49,36 @@ Mapiker-AI는 사용자의 요구사항을 AI 챗봇으로 수집하고, 최적�
 
 ---
 
-## Directory Structure
+## Repository Structure
+
+> **Note**: Frontend와 Backend는 별도 Git 저장소입니다.
+> 통합 PDCA 문서는 Frontend 저장소(`docs/`)에서 관리합니다.
 
 ```
-Mapiker-AI/
-├── CLAUDE.md              ← 현재 파일
-├── docs/                  # 통합 PDCA 문서
-│   ├── _INDEX.md
-│   ├── 00-architecture/   # 시스템 아키텍처
-│   ├── 01-plan/           # 계획 문서
-│   ├── 02-design/         # 설계 문서
-│   ├── 03-analysis/       # 분석 문서
-│   └── 04-report/         # 완료 리포트
+Mapiker-AI/                    # 루트 (git repo 아님)
+├── frontend/                  # ← Frontend Git Repo (현재)
+│   ├── CLAUDE.md              # 프로젝트 개요
+│   ├── docs/                  # 통합 PDCA 문서 (FE+BE)
+│   │   ├── _INDEX.md
+│   │   ├── 00-architecture/   # 시스템 아키텍처
+│   │   ├── 01-plan/           # 계획 문서
+│   │   ├── 02-design/         # 설계 문서
+│   │   ├── 03-analysis/       # 분석 문서
+│   │   └── 04-report/         # 완료 리포트
+│   └── src/
+│       ├── app/               # 페이지 라우트
+│       ├── components/        # React 컴포넌트
+│       └── lib/               # 유틸리티, API
 │
-├── frontend/              # Next.js 프론트엔드
-│   ├── src/
-│   │   ├── app/           # 페이지 라우트
-│   │   ├── components/    # React 컴포넌트
-│   │   └── lib/           # 유틸리티, API
-│   └── docs/              # (Archive) 기존 문서
+├── backend/                   # ← Backend Git Repo (별도)
+│   ├── CLAUDE.md              # Backend 개요 + docs 참조
+│   ├── routers/               # API 라우터
+│   ├── services/              # 비즈니스 로직
+│   ├── data/                  # 정적 데이터
+│   └── _archive_docs/         # (Archive) 기존 문서
 │
-├── backend/               # FastAPI 백엔드
-│   ├── routers/           # API 라우터
-│   ├── services/          # 비즈니스 로직
-│   ├── data/              # 정적 데이터
-│   └── docs/              # (Archive) 기존 문서
-│
-├── supabase/              # Supabase 설정
-└── start.sh               # 개발 서버 실행
+├── supabase/                  # Supabase 설정
+└── start.sh                   # 개발 서버 실행
 ```
 
 ---
@@ -177,6 +179,23 @@ User Message
 
 **문서 위치**: [`docs/_INDEX.md`](./docs/_INDEX.md)
 
+### Cross-Repository Documentation
+
+> **통합 PDCA 문서**는 Frontend/Backend 양쪽 작업을 모두 포함합니다.
+
+| 작업 위치 | 문서 참조 | 커밋 방식 |
+|-----------|-----------|-----------|
+| Frontend | 직접 참조 (`docs/`) | 코드와 함께 커밋 |
+| Backend | 상대경로 (`../frontend/docs/`) | Plan 참조하여 별도 커밋 |
+
+**Backend 커밋 시 참조 형식:**
+```
+feat: [기능 설명]
+
+Ref: ../frontend/docs/01-plan/features/[feature].plan.md
+Section: [섹션 번호]
+```
+
 ---
 
 ## Current Status
@@ -222,5 +241,7 @@ User Message
 
 ## Related Links
 
-- **Frontend Docs (Archive)**: [`frontend/docs/`](./frontend/docs/_INDEX.md)
-- **Backend Docs (Archive)**: [`backend/docs/`](./backend/docs/_INDEX.md)
+- **통합 PDCA Docs**: [`docs/_INDEX.md`](./docs/_INDEX.md)
+- **Backend Repo**: `../backend/` (별도 Git 저장소)
+- **Backend CLAUDE.md**: `../backend/CLAUDE.md`
+- **Backend Archive Docs**: `../backend/_archive_docs/`
