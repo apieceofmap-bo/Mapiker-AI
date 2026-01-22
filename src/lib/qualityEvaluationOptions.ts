@@ -1,4 +1,9 @@
-import { Country, QualityFeature, TestPeriod } from './types';
+import { Country, TestPeriod } from './types';
+import { QUALITY_FEATURES, QualityFeature } from './featureRegistry';
+
+// Re-export for backwards compatibility
+export { QUALITY_FEATURES } from './featureRegistry';
+export type { QualityFeature } from './featureRegistry';
 
 export const AVAILABLE_COUNTRIES: Country[] = [
   // Asia
@@ -61,48 +66,8 @@ export const AVAILABLE_COUNTRIES: Country[] = [
   { code: 'KE', name: 'Kenya', region: 'Africa' },
 ];
 
-export const QUALITY_FEATURES: QualityFeature[] = [
-  {
-    id: 'geocoding_accuracy',
-    name: 'Geocoding Accuracy',
-    description: 'Address-to-coordinate precision and reverse geocoding quality'
-  },
-  {
-    id: 'routing_quality',
-    name: 'Routing Quality',
-    description: 'Route optimization, ETA accuracy, and turn-by-turn navigation precision'
-  },
-  {
-    id: 'poi_coverage',
-    name: 'POI Coverage',
-    description: 'Points of interest database completeness and freshness'
-  },
-  {
-    id: 'map_freshness',
-    name: 'Map Data Freshness',
-    description: 'How frequently the map data is updated with road changes'
-  },
-  {
-    id: 'traffic_accuracy',
-    name: 'Traffic Data Accuracy',
-    description: 'Real-time and predictive traffic data quality'
-  },
-  {
-    id: 'address_validation',
-    name: 'Address Validation',
-    description: 'Address formatting and deliverability verification'
-  },
-  {
-    id: 'ev_charging',
-    name: 'EV Charging Coverage',
-    description: 'Electric vehicle charging station data availability'
-  },
-  {
-    id: 'truck_routing',
-    name: 'Truck Routing',
-    description: 'Commercial vehicle routing with restrictions and attributes'
-  },
-];
+// QUALITY_FEATURES is now imported from featureRegistry.ts
+// This ensures synchronization with feature_registry.json
 
 export const TEST_PERIODS: TestPeriod[] = [
   { days: 7, label: '7 days', description: 'Quick evaluation' },
