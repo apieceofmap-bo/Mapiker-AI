@@ -140,17 +140,17 @@ export default function ProductCard({
 
           {/* Key Features (limited) */}
           <div className="flex flex-wrap gap-1 mt-2">
-            {product.key_features.slice(0, 5).map((feature) => (
+            {product.features.slice(0, 5).map((feature) => (
               <span
-                key={feature}
+                key={feature.name}
                 className="px-2 py-0.5 bg-[#f7f6f3] text-[#787774] text-xs rounded"
               >
-                {feature}
+                {feature.name}
               </span>
             ))}
-            {product.key_features.length > 5 && (
+            {product.features.length > 5 && (
               <span className="px-2 py-0.5 text-[#9b9a97] text-xs">
-                +{product.key_features.length - 5} more
+                +{product.features.length - 5} more
               </span>
             )}
           </div>
@@ -184,9 +184,9 @@ export default function ProductCard({
                         <p className="text-[#787774] mt-1 line-clamp-2">{similar.description}</p>
                         {/* Highlight key differences */}
                         <div className="mt-1 flex flex-wrap gap-1">
-                          {similar.key_features.slice(0, 3).map((f) => (
-                            <span key={f} className="px-1.5 py-0.5 bg-[#f7f6f3] text-[#787774] rounded">
-                              {f}
+                          {similar.features.slice(0, 3).map((f) => (
+                            <span key={f.name} className="px-1.5 py-0.5 bg-[#f7f6f3] text-[#787774] rounded">
+                              {f.name}
                             </span>
                           ))}
                         </div>

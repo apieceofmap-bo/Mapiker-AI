@@ -122,7 +122,7 @@ export default function CatalogPage() {
           provider: p.provider,
           product_name: p.product_name,
           description: p.description,
-          key_features: p.key_features,
+          features: p.features,
           matched_features: [], // No matching for catalog selection
           match_score: 100, // Default score for manually selected
           document_url: p.document_url,

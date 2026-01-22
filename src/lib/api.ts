@@ -1,4 +1,4 @@
-import { ChatMessage, ChatResponse, Requirements, MatchResponse } from "./types";
+import { ChatMessage, ChatResponse, Requirements, MatchResponse, SalesLeadRequest, FeatureDetail } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -107,6 +107,24 @@ export async function sendContactEmail(data: ContactFormData): Promise<{ success
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ detail: "Failed to send message" }));
     throw new Error(errorData.detail || "Failed to send message");
+  }
+
+  return response.json();
+}
+
+// Sales Lead API (from chatbot)
+export async function submitSalesLead(data: SalesLeadRequest): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/api/contact/sales-lead`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: "Failed to submit sales lead" }));
+    throw new Error(errorData.detail || "Failed to submit sales lead");
   }
 
   return response.json();
@@ -286,7 +304,7 @@ export interface CatalogProduct {
   feature_category?: string;
   product_group: string;
   description: string;
-  key_features: string[];
+  features: FeatureDetail[];
   suitable_for: {
     use_cases?: string[];
     applications?: string[];
@@ -336,7 +354,7 @@ export async function getCatalog(params?: {
   return response.json();
 }
 
-export async function getProductDetail(productId: string): Promise<CatalogProduct & { key_features: string[] }> {
+export async function getProductDetail(productId: string): Promise<CatalogProduct & { features: FeatureDetail[] }> {
   const response = await fetch(`${API_BASE_URL}/api/products/catalog/${productId}`);
 
   if (!response.ok) {

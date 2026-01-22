@@ -8,6 +8,19 @@ export interface ChatResponse {
   reply: string;
   extracted_requirements: Requirements | null;
   is_complete: boolean;
+  trigger_sales_form?: boolean;
+}
+
+export interface SalesLeadRequest {
+  name: string;
+  email: string;
+  company: string;
+  phone?: string;
+  request_details: string;
+  conversation_history?: ChatMessage[];
+  use_case?: string;
+  region?: string;
+  required_features?: string[];
 }
 
 // Environment types for Mobile + Backend separation
@@ -25,7 +38,17 @@ export interface Requirements {
   required_features: string[];
   application: string | string[];  // Supports array for multi-environment
   region: string;
+  vehicle_types?: string[];  // e.g., ["truck"], ["bicycle", "scooter"]
+  routing_types?: string[];  // e.g., ["multi_waypoint", "matrix"]
+  routing_type?: string;     // Deprecated: kept for backward compatibility
   additional_notes?: string;  // User's additional comments/preferences
+}
+
+// Feature detail with name, description, and use_case
+export interface FeatureDetail {
+  name: string;
+  description: string;
+  use_case: string;
 }
 
 // Similar product info (for comparison)
@@ -33,7 +56,7 @@ export interface SimilarProduct {
   id: string;
   product_name: string;
   description: string;
-  key_features: string[];
+  features: FeatureDetail[];
   match_score: number;
 }
 
@@ -43,7 +66,7 @@ export interface Product {
   provider: string;
   product_name: string;
   description: string;
-  key_features: string[];
+  features: FeatureDetail[];
   matched_features: string[];
   match_score: number;
   document_url: string;
@@ -112,6 +135,8 @@ export interface Project {
   required_features: string[];
   application: string | string[];
   region: string;
+  vehicle_types?: string[];  // e.g., ["truck"], ["bicycle", "scooter"]
+  routing_types?: string[];  // e.g., ["multi_waypoint", "matrix"]
   additional_notes?: string;  // User's additional comments/preferences
   selected_products: SelectionState | EnvironmentSelectionState;
   match_result?: MatchResponse;

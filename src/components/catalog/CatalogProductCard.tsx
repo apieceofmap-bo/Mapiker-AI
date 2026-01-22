@@ -95,14 +95,14 @@ export default function CatalogProductCard({
 
           {/* Key Features */}
           <div className="flex flex-wrap gap-1 mt-2">
-            {product.key_features.slice(0, 5).map((feature) => (
-              <span key={feature} className="px-2 py-0.5 bg-[#f7f6f3] text-[#787774] text-xs rounded">
-                {feature}
+            {product.features.slice(0, 5).map((feature) => (
+              <span key={feature.name} className="px-2 py-0.5 bg-[#f7f6f3] text-[#787774] text-xs rounded">
+                {feature.name}
               </span>
             ))}
-            {product.key_features.length > 5 && (
+            {product.features.length > 5 && (
               <span className="px-2 py-0.5 text-[#9b9a97] text-xs">
-                +{product.key_features.length - 5} more
+                +{product.features.length - 5} more
               </span>
             )}
           </div>
