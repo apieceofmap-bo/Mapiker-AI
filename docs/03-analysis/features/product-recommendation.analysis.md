@@ -33,6 +33,7 @@
 | 4 | Vehicle Type boost 로직 | ✅ **Resolved** | `_apply_vehicle_boost()` 구현 |
 | 5 | Product DB `supported_vehicles` | ✅ **Resolved** | 31개 제품에 필드 추가 |
 | 6 | `key_features` 레거시 제거 | ✅ **Resolved** | 모든 폴백 코드 제거 |
+| 7 | `prompts.py` Feature Format 불일치 | ✅ **Resolved** | kebab-case → Title Case 마이그레이션 |
 
 ---
 
@@ -150,12 +151,14 @@
 | `FeatureDetail` 구조 | ✅ Implemented | `frontend/src/lib/types.ts:48` |
 | `features: FeatureDetail[]` 필드 | ✅ Implemented | `frontend/src/lib/types.ts:69` |
 | `key_features` 제거 | ✅ **Completed** | 모든 폴백 코드 제거됨 |
-| Chat Agent USE_CASE_FEATURES 업데이트 | ⚠️ **Partial** | 일부 표준 Feature로 전환 |
+| Chat Agent USE_CASE_FEATURES 업데이트 | ✅ **Completed** | Title Case 형식 사용 |
 | PRECOMPUTED_FEATURE_MAPPINGS 업데이트 | ✅ Implemented | `backend/improved_pipeline_v2.py:47-124` |
 | `_get_product_feature_names()` | ✅ Implemented | `backend/database.py:374` |
 | Product DB features 필드 | ✅ Implemented | `Product_Dsc_All.json` |
+| `FEATURE_PRODUCT_HINTS` Title Case | ✅ **Completed** | `backend/prompts.py:12-145` |
+| Agent Prompts Feature Keywords | ✅ **Completed** | `backend/prompts.py` (AGENT1, AGENT3) |
 
-**Status: COMPLETE** - 2026-01-22 레거시 제거 완료
+**Status: COMPLETE** - 2026-01-22 전체 파이프라인 Title Case 통일 완료
 
 ---
 
@@ -197,6 +200,7 @@
 | `services/product_matcher.py` | `_get_product_features()` 폴백 제거 |
 | `routers/products.py` | `key_features` 폴백 패턴 제거 |
 | `data/Product_Dsc_All.json` | 31개 Routing 제품에 `supported_vehicles` 필드 추가 |
+| `prompts.py` | Feature 키 kebab-case → Title Case 마이그레이션 (21개) |
 
 ### 4.3 Commits
 
@@ -204,6 +208,7 @@
 |------------|--------|-------------|
 | Frontend | `d8d6a9a` | Gap Analysis 구현 (Phase 6 Auto-recommendation, types 개선) |
 | Backend | `c64ade5` | Vehicle Type boost 구현 및 key_features 레거시 제거 |
+| Backend | `dda507f` | Feature 키 kebab-case → Title Case 마이그레이션 |
 
 ---
 
@@ -220,6 +225,50 @@
 | `_apply_vehicle_boost()` | `improved_pipeline_v2.py:2005` | ✅ |
 | `supported_vehicles` | `Product_Dsc_All.json` | ✅ |
 | `auto_recommended` | `types.ts:84`, `CategoryGroup.tsx:101` | ✅ |
+| `FEATURE_PRODUCT_HINTS` | `prompts.py:12` (Title Case) | ✅ |
+| Agent Prompt Feature Keywords | `prompts.py` (AGENT1, AGENT3) | ✅ |
+
+---
+
+## 6. Feature Format Audit (2026-01-22)
+
+### 6.1 전체 파이프라인 Feature Format 현황
+
+| 영역 | 파일/모듈 | 포맷 | 상태 |
+|------|-----------|------|------|
+| **Product DB** | `Product_Dsc_All.json` | Title Case | ✅ |
+| **Frontend Types** | `src/lib/types.ts` | `FeatureDetail[]` | ✅ |
+| **Frontend Components** | `*.tsx` | `feature.name` 패턴 | ✅ |
+| **Chat Agent** | `services/chat_agent.py` | Title Case | ✅ |
+| **Agent3 Scorer** | `agent3_scorer.py` | DB `features` 참조 | ✅ |
+| **Products Router** | `routers/products.py` | `FeatureDetail[]` | ✅ |
+| **Pipeline v2** | `improved_pipeline_v2.py` | DB `features` 참조 | ✅ |
+| **Prompts** | `prompts.py` | Title Case | ✅ |
+
+### 6.2 마이그레이션된 Feature 키 (21개)
+
+```
+Real-time Routing    ETA Calculation      Route Optimization
+Multi-stop Optimization   Live Traffic    Distance Matrix
+Geocoding            Reverse Geocoding    Address Autocomplete
+POI Search           Nearby Search        Map Rendering
+Static Maps          Street View          Custom Map Styling
+Maps on Mobile       Driver Tracking      Fleet Tracking
+Geofencing           EV Routing           EV Charge Points
+```
+
+### 6.3 마이그레이션 상세
+
+| 변경 전 (kebab-case) | 변경 후 (Title Case) |
+|---------------------|---------------------|
+| `real-time-routing` | `Real-time Routing` |
+| `eta-calculation` | `ETA Calculation` |
+| `route-optimization` | `Route Optimization` |
+| `poi-search` | `POI Search` |
+| `map-rendering` | `Map Rendering` |
+| `driver-tracking` | `Driver Tracking` |
+| `ev-routing` | `EV Routing` |
+| ... | (총 21개) |
 
 ---
 
@@ -229,3 +278,4 @@
 |---------|------|---------|---------|
 | 1.0 | 2026-01-22 | Initial gap analysis | Claude Code |
 | 1.1 | 2026-01-22 | Gap #2, #4, #5, #6 resolved; #1, #3 skipped | Claude Code |
+| 1.2 | 2026-01-22 | Gap #7 resolved: prompts.py Feature Format Migration | Claude Code |
