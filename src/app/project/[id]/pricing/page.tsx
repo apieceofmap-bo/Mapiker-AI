@@ -5,10 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase";
-import { Project, Product, Category, MatchResponse, SelectionState, EnvironmentSelectionState } from "@/lib/types";
+import { Project, Product, MatchResponse, SelectionState, EnvironmentSelectionState, PricingData } from "@/lib/types";
 import StageIndicator from "@/components/dashboard/StageIndicator";
 import PricingCalculator from "@/components/pricing/PricingCalculator";
-import VendorComparison from "@/components/pricing/VendorComparison";
 import ConfidentialBanner from "@/components/common/ConfidentialBanner";
 import { logAccess } from "@/lib/accessLog";
 
@@ -21,7 +20,6 @@ export default function PricingPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"calculator" | "comparison">("calculator");
 
   useEffect(() => {
     if (authLoading) return;
@@ -113,13 +111,7 @@ export default function PricingPage() {
     return products;
   }, [project]);
 
-  // Get categories from match result
-  const categories = useMemo<Category[]>(() => {
-    if (!project?.match_result) return [];
-    return (project.match_result as MatchResponse).categories;
-  }, [project]);
-
-  const handleContinueToQuality = async () => {
+  const handleContinueToQuality = async (pricingData: PricingData | null) => {
     if (!user || !project) return;
 
     const supabase = createClient();
@@ -130,6 +122,7 @@ export default function PricingPage() {
         .from("projects")
         .update({
           pricing_calculated: true,
+          pricing_data: pricingData,
           current_stage: 4,
         })
         .eq("id", projectId);
@@ -191,7 +184,7 @@ export default function PricingPage() {
           <span>/</span>
           <span className="text-[#37352f]">{project.name}</span>
         </div>
-        <h1 className="text-2xl font-bold text-[#37352f]">{project.name}</h1>
+        <h1 className="text-2xl font-bold text-[#37352f]">Price Calculation</h1>
         <p className="text-[#787774] mt-1">
           {project.use_case_description || project.use_case}
         </p>
@@ -205,67 +198,11 @@ export default function PricingPage() {
       {/* Confidential Banner */}
       <ConfidentialBanner />
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#e9e9e7]">
-        <button
-          onClick={() => setActiveTab("calculator")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === "calculator"
-              ? "border-[#37352f] text-[#37352f]"
-              : "border-transparent text-[#787774] hover:text-[#37352f]"
-          }`}
-        >
-          Pricing Calculator
-        </button>
-        <button
-          onClick={() => setActiveTab("comparison")}
-          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === "comparison"
-              ? "border-[#37352f] text-[#37352f]"
-              : "border-transparent text-[#787774] hover:text-[#37352f]"
-          }`}
-        >
-          Vendor Comparison
-        </button>
-      </div>
-
-      {/* Content */}
-      {activeTab === "calculator" ? (
-        <PricingCalculator
-          selectedProducts={selectedProducts}
-          onContinue={handleContinueToQuality}
-        />
-      ) : (
-        <div className="space-y-6">
-          <VendorComparison categories={categories} monthlyRequests={100000} />
-          <div className="flex justify-end">
-            <button
-              onClick={handleContinueToQuality}
-              className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2"
-            >
-              Continue to Quality Evaluation
-              <span>→</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Selected Products Summary */}
-      <div className="bg-[#f7f6f3] rounded-lg border border-[#e9e9e7] p-6">
-        <h3 className="font-semibold text-[#37352f] mb-4">
-          Selected Products ({selectedProducts.length})
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {selectedProducts.map((product) => (
-            <span
-              key={product.id}
-              className="px-3 py-1.5 bg-white border border-[#e9e9e7] rounded-full text-sm text-[#37352f]"
-            >
-              {product.provider} - {product.product_name}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* Pricing Calculator */}
+      <PricingCalculator
+        selectedProducts={selectedProducts}
+        onContinue={handleContinueToQuality}
+      />
     </div>
   );
 }

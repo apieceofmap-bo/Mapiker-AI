@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { ChatMessage as ChatMessageType, Requirements } from "@/lib/types";
 import { sendChatMessage } from "@/lib/api";
 import ChatMessage from "./ChatMessage";
+import InlineSalesForm from "./InlineSalesForm";
 
 const INITIAL_MESSAGE: ChatMessageType = {
   role: "assistant",
@@ -40,6 +41,7 @@ export default function ChatWindow({
   const [requirements, setRequirements] = useState<Requirements | null>(
     initialRequirements || null
   );
+  const [salesFormIndex, setSalesFormIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -77,10 +79,16 @@ export default function ChatWindow({
       const response = await sendChatMessage(userMessage, messages);
 
       // Add assistant response
-      setMessages([
+      const updatedMessages: ChatMessageType[] = [
         ...newMessages,
         { role: "assistant", content: response.reply },
-      ]);
+      ];
+      setMessages(updatedMessages);
+
+      // Check if sales form should be shown
+      if (response.trigger_sales_form) {
+        setSalesFormIndex(updatedMessages.length - 1); // Show after the assistant message
+      }
 
       // Check if requirements are complete
       if (response.is_complete && response.extracted_requirements) {
@@ -124,7 +132,18 @@ export default function ChatWindow({
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((message, index) => (
-          <ChatMessage key={index} message={message} />
+          <React.Fragment key={index}>
+            <ChatMessage message={message} />
+            {salesFormIndex === index && (
+              <InlineSalesForm
+                conversationHistory={messages}
+                useCase={requirements?.use_case}
+                region={requirements?.region}
+                requiredFeatures={requirements?.required_features}
+                onSubmitSuccess={() => setSalesFormIndex(null)}
+              />
+            )}
+          </React.Fragment>
         ))}
 
         {isLoading && (
@@ -171,6 +190,9 @@ export default function ChatWindow({
             <p>
               <strong>Features:</strong> {requirements.required_features.join(", ")}
             </p>
+          </div>
+          <div className="mt-3 pt-3 border-t border-[rgba(15,123,108,0.2)] text-xs text-[#0f7b6c]">
+            Click &quot;View Recommended Products&quot; below, or type in the chat to modify your requirements.
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
 # Completion Reports Index
 
 > **PDCA Phase**: Act (Report)
-> **Last Updated**: 2026-01-16
+> **Last Updated**: 2026-01-21
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Document | Status | Last Modified | Description |
 |----------|--------|---------------|-------------|
+| [product-selection-improvement.report.md](./features/product-selection-improvement.report.md) | ✅ Complete | 2026-01-21 | Product Selection 멀티 선택 및 Feature Category |
 | [landing-page-improvement.report.md](./features/landing-page-improvement.report.md) | ✅ Complete | 2026-01-16 | 랜딩페이지 개선 완료 리포트 |
 
 ---
@@ -27,6 +28,7 @@
 
 | Cycle | Feature | Period | Completion Rate |
 |-------|---------|--------|-----------------|
+| #2 | product-selection-improvement | 2026-01-21 | 100% |
 | #1 | landing-page-improvement | 2026-01-16 | 100% |
 
 ---

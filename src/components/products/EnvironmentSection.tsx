@@ -13,6 +13,7 @@ interface EnvironmentSectionProps {
   onToggleCategory: (categoryId: string) => void;
   onSelectionChange: (categoryId: string, productId: string, isSelected: boolean) => void;
   recommendedProvider: string | null;
+  vendorFilter?: string;
 }
 
 /**
@@ -33,13 +34,25 @@ export default function EnvironmentSection({
   onToggleCategory,
   onSelectionChange,
   recommendedProvider,
+  vendorFilter = "all",
 }: EnvironmentSectionProps) {
   const sectionInfo = ENVIRONMENT_SECTIONS[environment];
 
+  // Filter products by vendor for each category
+  const filteredCategories = categories
+    .map((category) => {
+      const filteredProducts =
+        vendorFilter === "all"
+          ? category.products
+          : category.products.filter((p) => p.provider === vendorFilter);
+      return { ...category, products: filteredProducts };
+    })
+    .filter((category) => category.products.length > 0);
+
   // Count selections in this environment
   const selectedCount = Object.values(selections).filter(v => v !== null).length;
-  const requiredCount = categories.filter(c => c.required).length;
-  const selectedRequiredCount = categories.filter(
+  const requiredCount = filteredCategories.filter(c => c.required).length;
+  const selectedRequiredCount = filteredCategories.filter(
     c => c.required && selections[c.id] !== null
   ).length;
 
@@ -75,8 +88,8 @@ export default function EnvironmentSection({
 
       {/* Category Groups */}
       <div className="p-4 space-y-3 bg-white">
-        {categories.length > 0 ? (
-          categories.map(category => (
+        {filteredCategories.length > 0 ? (
+          filteredCategories.map(category => (
             <CategoryGroup
               key={`${environment}-${category.id}`}
               category={category}
@@ -90,7 +103,7 @@ export default function EnvironmentSection({
           ))
         ) : (
           <div className="text-center py-8 text-gray-400">
-            <p>No products available for this environment</p>
+            <p>No products available for this environment{vendorFilter !== "all" ? ` from ${vendorFilter}` : ""}</p>
           </div>
         )}
       </div>

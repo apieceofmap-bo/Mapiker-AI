@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Product } from "@/lib/types";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { Product, PricingData, VendorPricing, ProductPricing } from "@/lib/types";
 import { calculatePricing, ProductCost, BulkPricingResponse, UsageMetrics } from "@/lib/api";
 import { getVendorColor } from "@/lib/vendorColors";
 
@@ -16,7 +16,7 @@ interface VendorSummary {
 
 interface PricingCalculatorProps {
   selectedProducts: Product[];
-  onContinue?: () => void;
+  onContinue?: (pricingData: PricingData | null) => void;
 }
 
 // Preset monthly request options
@@ -105,6 +105,29 @@ export default function PricingCalculator({
         }));
       })()
     : [];
+
+  // Convert to PricingData format for persistence
+  const persistablePricingData = useMemo<PricingData | null>(() => {
+    if (!pricingData || vendorSummaries.length === 0) return null;
+
+    const vendors: VendorPricing[] = vendorSummaries.map((vs) => ({
+      vendor: vs.vendor,
+      products: vs.products.map((p): ProductPricing => ({
+        product_id: p.product_id,
+        product_name: p.product_name,
+        pricing_model: p.billing_unit,
+        estimated_monthly_cost: p.estimated_cost,
+        pricing_url: "",
+      })),
+      subtotal: vs.subtotal,
+    }));
+
+    return {
+      vendors,
+      total_estimated_monthly: pricingData.total_cost,
+      currency: "USD",
+    };
+  }, [pricingData, vendorSummaries]);
 
   const handlePresetClick = (value: number) => {
     setUsageMetrics(prev => ({ ...prev, requests: value }));
@@ -429,7 +452,7 @@ export default function PricingCalculator({
       {onContinue && (
         <div className="flex justify-end">
           <button
-            onClick={onContinue}
+            onClick={() => onContinue(persistablePricingData)}
             disabled={loading}
             className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >

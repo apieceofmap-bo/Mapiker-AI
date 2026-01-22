@@ -40,11 +40,14 @@ function LoadingScreen() {
   const [dots, setDots] = useState("");
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    // Stop advancing when at the last message (stays at "Finalizing results")
+    if (messageIndex >= LOADING_MESSAGES.length - 1) return;
+
+    const timeout = setTimeout(() => {
+      setMessageIndex((prev) => Math.min(prev + 1, LOADING_MESSAGES.length - 1));
     }, LOADING_MESSAGES[messageIndex].duration);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, [messageIndex]);
 
   useEffect(() => {
@@ -130,8 +133,12 @@ function NewProjectPageContent() {
   // Flag to track if initial message was processed
   const [initialProcessed, setInitialProcessed] = useState(false);
 
+  // Flag to track if autoSave was triggered
+  const [autoSaveTriggered, setAutoSaveTriggered] = useState(false);
+
   // Check if we need to wait for initial message processing
   const initialMessage = searchParams.get("initial");
+  const autoSave = searchParams.get("autoSave") === "true";
   const shouldWaitForInitial = !!initialMessage && !initialProcessed && !showRestoreDialog;
 
   // Check for existing session on mount
@@ -140,12 +147,48 @@ function NewProjectPageContent() {
       const session = loadSession();
       const age = getSessionAge();
       if (session && age !== null) {
-        setPendingSession(session);
-        setSessionAge(age);
-        setShowRestoreDialog(true);
+        // If autoSave mode, auto-restore without showing dialog
+        if (autoSave) {
+          setChatMessages(session.messages);
+          setChatRequirements(session.requirements);
+          setChatIsComplete(session.isComplete);
+          setRequirements(session.requirements);
+
+          if (session.step === "products" && session.matchResult) {
+            setMatchResult(session.matchResult);
+            setSelections(session.selections);
+            setIsMultiEnv(session.isMultiEnvironment || false);
+            setStep("products");
+          }
+          // Don't show dialog in autoSave mode
+        } else {
+          setPendingSession(session);
+          setSessionAge(age);
+          setShowRestoreDialog(true);
+        }
       }
     }
-  }, []);
+  }, [autoSave]);
+
+  // Auto-save project after login when autoSave=true
+  // This effect is defined here but relies on handleSaveProject defined below
+  // The callback is only called after the component mounts, so this is safe
+  const autoSaveEffect = useCallback(() => {
+    if (
+      autoSave &&
+      user &&
+      requirements &&
+      matchResult &&
+      !autoSaveTriggered &&
+      !isSaving
+    ) {
+      setAutoSaveTriggered(true);
+    }
+  }, [autoSave, user, requirements, matchResult, autoSaveTriggered, isSaving]);
+
+  useEffect(() => {
+    autoSaveEffect();
+  }, [autoSaveEffect]);
 
   // Handle initial message from landing page
   useEffect(() => {
@@ -390,7 +433,7 @@ function NewProjectPageContent() {
   };
 
   // Save project to Supabase
-  const handleSaveProject = async () => {
+  const handleSaveProject = useCallback(async () => {
     if (!user || !requirements || !matchResult) return;
 
     setIsSaving(true);
@@ -432,7 +475,14 @@ function NewProjectPageContent() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [user, requirements, matchResult, selections, isMultiEnv, supabase, router]);
+
+  // Trigger save when autoSaveTriggered becomes true
+  useEffect(() => {
+    if (autoSaveTriggered && !isSaving) {
+      handleSaveProject();
+    }
+  }, [autoSaveTriggered, isSaving, handleSaveProject]);
 
   return (
     <div className="min-h-screen bg-[#fbfbfa]">
@@ -474,7 +524,7 @@ function NewProjectPageContent() {
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoading || (autoSaveTriggered && isSaving) ? (
           <LoadingScreen />
         ) : (
           <>
@@ -551,7 +601,7 @@ function NewProjectPageContent() {
                           Login to save your project
                         </p>
                         <a
-                          href={`/login?redirect=${encodeURIComponent('/project/new')}`}
+                          href={`/login?redirect=${encodeURIComponent('/project/new?autoSave=true')}`}
                           className="px-6 py-3 bg-[#37352f] hover:bg-[#2f2d28] text-white font-medium rounded-md transition-colors inline-block"
                         >
                           Login to Continue

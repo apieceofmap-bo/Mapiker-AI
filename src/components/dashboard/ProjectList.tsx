@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Project } from "@/lib/types";
@@ -14,12 +14,36 @@ interface ProjectListProps {
 
 type FilterStatus = 'all' | 'draft' | 'in_progress' | 'completed' | 'quote_requested';
 
+const COMPARE_INTRO_HIDDEN_KEY = 'mapiker_compare_intro_hidden';
+
 export default function ProjectList({ projects, onDeleteProject, onRenameProject }: ProjectListProps) {
   const router = useRouter();
   const [filter, setFilter] = useState<FilterStatus>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedForCompare, setSelectedForCompare] = useState<Set<string>>(new Set());
+  const [showCompareIntro, setShowCompareIntro] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Check localStorage for compare intro preference
+  useEffect(() => {
+    const hidden = localStorage.getItem(COMPARE_INTRO_HIDDEN_KEY);
+    if (!hidden && projects.length >= 2) {
+      setShowCompareIntro(true);
+    }
+  }, [projects.length]);
+
+  const handleHideCompareIntro = (dontShowAgain: boolean) => {
+    if (dontShowAgain) {
+      localStorage.setItem(COMPARE_INTRO_HIDDEN_KEY, 'true');
+    }
+    setShowCompareIntro(false);
+  };
+
+  const handleStartCompareFromIntro = () => {
+    setShowCompareIntro(false);
+    setCompareMode(true);
+  };
 
   const filteredProjects = filter === 'all'
     ? projects
@@ -101,6 +125,15 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
 
   return (
     <div>
+      {/* Compare Intro Card - shown for first-time users with 2+ projects */}
+      {showCompareIntro && !compareMode && (
+        <CompareIntroCard
+          onClose={() => handleHideCompareIntro(false)}
+          onDontShowAgain={() => handleHideCompareIntro(true)}
+          onStartCompare={handleStartCompareFromIntro}
+        />
+      )}
+
       {/* Filter Tabs & Compare Button */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-1 overflow-x-auto pb-2">
@@ -129,16 +162,27 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
 
         {/* Compare Mode Controls */}
         {!compareMode ? (
-          <button
-            onClick={() => setCompareMode(true)}
-            disabled={projects.length < 2}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#787774] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.04)] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            Compare
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setCompareMode(true)}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              disabled={projects.length < 2}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[#f7f6f3] hover:bg-[#e9e9e7] text-[#37352f] border border-[#e9e9e7] rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Compare Projects
+            </button>
+            {/* Tooltip */}
+            {showTooltip && projects.length >= 2 && (
+              <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-[#37352f] text-white text-xs rounded-lg shadow-lg z-10">
+                <p>Compare 2-3 projects side-by-side to see differences in pricing, features, and quality evaluation.</p>
+                <div className="absolute -top-1 right-4 w-2 h-2 bg-[#37352f] rotate-45"></div>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <span className="text-sm text-[#787774]">
@@ -153,7 +197,7 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
             <button
               onClick={handleCompare}
               disabled={selectedForCompare.size < 2}
-              className="px-3 py-1.5 text-sm font-medium bg-[#37352f] text-white rounded-md hover:bg-[#2f2d28] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 text-sm font-medium bg-[#37352f] text-white rounded-md hover:bg-[#2f2d28] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Compare Selected
             </button>
@@ -186,6 +230,84 @@ export default function ProjectList({ projects, onDeleteProject, onRenameProject
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// Compare Intro Card Component
+interface CompareIntroCardProps {
+  onClose: () => void;
+  onDontShowAgain: () => void;
+  onStartCompare: () => void;
+}
+
+function CompareIntroCard({ onClose, onDontShowAgain, onStartCompare }: CompareIntroCardProps) {
+  const [dontShow, setDontShow] = useState(false);
+
+  const handleClose = () => {
+    if (dontShow) {
+      onDontShowAgain();
+    } else {
+      onClose();
+    }
+  };
+
+  return (
+    <div className="mb-6 p-5 bg-gradient-to-r from-[#f7f6f3] to-[#fafafa] border border-[#e9e9e7] rounded-lg relative">
+      {/* Close button */}
+      <button
+        onClick={handleClose}
+        className="absolute top-3 right-3 p-1 text-[#9b9a97] hover:text-[#37352f] hover:bg-[rgba(55,53,47,0.08)] rounded transition-colors"
+        aria-label="Close"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div className="flex items-start gap-4">
+        {/* Icon */}
+        <div className="flex-shrink-0 w-10 h-10 bg-[#37352f] rounded-lg flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 pr-6">
+          <h3 className="text-base font-semibold text-[#37352f] mb-1">
+            Compare Projects
+          </h3>
+          <p className="text-sm text-[#787774] mb-4">
+            Select 2-3 projects to compare pricing, features, and quality evaluation side-by-side.
+            Make informed decisions with a comprehensive comparison report.
+          </p>
+
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            {/* Don't show again checkbox */}
+            <label className="flex items-center gap-2 text-sm text-[#787774] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={dontShow}
+                onChange={(e) => setDontShow(e.target.checked)}
+                className="w-4 h-4 rounded border-[#d3d3d3] text-[#37352f] focus:ring-[#37352f] focus:ring-offset-0"
+              />
+              Don&apos;t show again
+            </label>
+
+            {/* Start Compare button */}
+            <button
+              onClick={onStartCompare}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#37352f] hover:bg-[#2f2d28] text-white text-sm font-medium rounded-md transition-colors"
+            >
+              Start Compare
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 # Plan Documents Index
 
 > **PDCA Phase**: Plan
-> **Last Updated**: 2026-01-16
+> **Last Updated**: 2026-01-21
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Document | Status | Last Modified | Description |
 |----------|--------|---------------|-------------|
+| [vendor-comparison.plan.md](./features/vendor-comparison.plan.md) | 🔄 In Progress | 2026-01-21 | 벤더 비교 기능 계획 |
 | [landing-page-improvement.plan.md](./features/landing-page-improvement.plan.md) | ✅ Complete | 2026-01-16 | 랜딩페이지 개선 계획 |
 
 ---
