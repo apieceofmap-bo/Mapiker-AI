@@ -14,9 +14,11 @@
 > - ✅ **Phase 2 (P2)**: Similar API Differentiation - COMPLETE
 > - ✅ **Phase 8.1 (P0)**: db_feature_mappings 자동 생성 - COMPLETE (2026-01-23)
 > - ✅ **Phase 6 (P2)**: Map Display Auto-Recommendation - COMPLETE (2026-01-23)
+> - ✅ **Phase 5 (P1)**: Application Filter Fix + Mobile SDK Priority - COMPLETE (2026-01-24)
+> - ✅ **Phase 5.1 (P0)**: UI/UX Fixes (Multi-env, SDK matched_features, Select all, +N more) - COMPLETE (2026-01-24)
+> - ✅ **Phase 5.3-5.4 (P0)**: Multi-env 분리 개선 + Mobile SDK 표시 + Map Display 자동 추천 - COMPLETE (2026-01-25)
 > - 🔄 **Phase 8 (P0)**: Unified Feature System Migration - IN PROGRESS (92%)
 > - 🆕 **Phase 7 (P0)**: Loading Time Optimization - PENDING
-> - 🆕 **Phase 5 (P1)**: Application Filter Fix (SDK vs API) - PENDING
 
 ---
 
@@ -612,7 +614,32 @@ VEHICLE_POI_KEYWORDS = {
 
 ## 9. New Issues (2026-01-22 Update)
 
-### 9.1 Phase 5: Application 필터링 개선 (Required Feature 미커버)
+### 9.1 Phase 5: Application 필터링 개선 + Mobile SDK 우선 추천
+
+> **Status**: ✅ COMPLETE (2026-01-24)
+>
+> **구현 내용:**
+> - **Phase 5-A**: SDK Feature 매핑 보완 (`data/feature_registry.json`)
+>   - Navigation SDK, Maps SDK 등의 Feature를 Standard Feature에 매핑
+>   - 41개 SDK-specific Feature 추가 (Turn-by-turn Navigation → Point-to-Point Routing 등)
+> - **Phase 5-B**: SDK vs API 구분 필터링 (`database.py`)
+>   - `_is_sdk_product()` 헬퍼 함수 구현
+>   - SDK만 application 필터 적용, API는 use_case_relevance 임계값(0.2)으로 안전장치
+> - **Phase 5-C**: Mobile SDK 우선 추천 (`improved_pipeline_v2.py`)
+>   - `_apply_mobile_sdk_boost()` 함수 구현
+>   - Mobile 환경(mobile-app, driver-app)에서 SDK 제품 +20점 부스트
+> - **Phase 5-D**: 테스트 검증 통과
+>   - Mobile App 시나리오에서 SDK(91.7점)가 API보다 상위 노출 확인
+>
+> **테스트 결과:**
+> ```
+> 📱 Applying Mobile SDK Boost:
+>    📱 Boosted: Navigation SDK (iOS, Android) (71.7 → 91.7)
+>    📱 Boosted: Navigation SDK (61.7 → 81.7)
+>    📱 Boosted: Live Tracking SDK (23.3 → 43.3)
+>    📱 Boosted: Navigation SDK - Metered Trips (65.0 → 85.0)
+>    ✅ Boosted 4 SDK products for mobile
+> ```
 
 **문제:**
 - Google Geocoding API 등 핵심 API들이 추천되지 않음
@@ -816,6 +843,261 @@ def filter(self, use_case, application_environment, regional_coverage,
 | `database.py` | `_is_sdk_product()` 헬퍼 함수 추가 |
 | `database.py` | `_check_application_match()` 수정 - SDK vs API 구분 + 안전장치 |
 | `database.py` | `filter()` - use_case_relevance를 application 매칭에 전달 |
+
+---
+
+### 9.1.1 Phase 5.1: UI/UX Fixes (2026-01-24)
+
+> **Status**: ✅ COMPLETE (2026-01-24)
+>
+> **Issues Resolved:**
+> 1. Multi-environment Backend 0/0 required 표시 문제 수정
+> 2. SDK matched_features 비어있음 문제 수정
+> 3. "Select all XX products" 버튼 미작동 문제 수정
+> 4. "+N more" 기능 확장 불가 문제 수정
+
+#### Issue 1: Multi-environment Backend 처리
+
+**문제:**
+- 모바일 + Backend 환경을 함께 선택하면 Backend에서 "0/0 required" 표시
+- 원인: `product_matcher.py`에서 application 배열의 첫 번째 요소만 처리
+
+**해결:**
+```python
+# services/product_matcher.py
+def _classify_environments(self, applications: List[str]) -> Dict[str, List[str]]:
+    """환경을 mobile/backend/web 그룹으로 분류"""
+    groups = {}
+    for app in applications:
+        if "mobile" in app or "driver" in app:
+            groups.setdefault("mobile", []).append(app)
+        elif "backend" in app or "server" in app:
+            groups.setdefault("backend", []).append(app)
+        # ...
+    return groups
+
+def _format_multi_environment_response(...) -> Dict:
+    """각 환경별로 별도의 결과 반환"""
+    return {
+        "environments": [
+            {"id": "mobile", "categories": [...], ...},
+            {"id": "backend", "categories": [...], ...}
+        ],
+        "categories": [...],  # 통합 뷰 (하위 호환)
+        ...
+    }
+```
+
+**파일 변경:**
+- `services/product_matcher.py`: `_classify_environments()`, `_format_multi_environment_response()` 추가
+- `frontend/src/lib/types.ts`: `EnvironmentResult` 타입, `MatchResponse.environments` 필드 추가
+- `frontend/src/components/products/CombinedProductPreview.tsx`: Backend `environments` 배열 사용
+
+#### Issue 2: SDK matched_features 비어있음
+
+**문제:**
+- SDK 제품(Maps SDK, Navigation SDK) 선택 시 matched Required Features가 표시되지 않음
+- Alternative SDK 제품에 `matched_features: []`가 하드코딩됨
+
+**해결:**
+```python
+# services/product_matcher.py
+def _compute_matched_features_for_product(self, product: Dict, required_features: List[str]) -> List[str]:
+    """db_feature_mappings 기반으로 matched_features 계산"""
+    from feature_registry_loader import get_db_feature_mappings
+    db_mappings = get_db_feature_mappings()
+    product_features = set(f['name'] for f in product.get('features', []))
+
+    matched = []
+    for req_feature in required_features:
+        db_features = db_mappings.get(req_feature, [])
+        if product_features.intersection(set(db_features)):
+            matched.append(req_feature)
+    return matched
+
+# Primary SDK에도 fallback 적용
+if not product_matched_features and 'sdk' in product_details.get('data_format', '').lower():
+    product_matched_features = self._compute_matched_features_for_product(product_details, required_features)
+```
+
+**테스트 결과:**
+```
+Google Maps SDK → Vector Tiles, Point-to-Point Routing
+Mapbox Maps SDK → Vector Tiles
+Google Navigation SDK → Vector Tiles, Point-to-Point Routing, Real-time Tracking
+Mapbox Navigation SDK → Vector Tiles, Point-to-Point Routing, Real-time Tracking
+```
+
+#### Issue 3: Select all 버튼 미작동
+
+**문제:**
+- `handleSelectAllVendorRequired`가 `category.required === false`인 카테고리를 스킵
+- Multi-environment에서 Backend가 `required: false`가 되어 버튼이 작동 안 함
+
+**해결:**
+```typescript
+// CombinedProductPreview.tsx - required 체크 제거
+const handleSelectAllVendorRequired = useCallback(() => {
+  if (vendorFilter === "all") return;
+  matchResult.categories.forEach((category) => {
+    // 기존: if (!category.required) return;  // 제거됨
+    const vendorProduct = category.products.find((p) => p.provider === vendorFilter);
+    if (vendorProduct) {
+      onSelectionChange(category.id, vendorProduct.id, true);
+    }
+  });
+}, [vendorFilter, matchResult.categories, onSelectionChange]);
+```
+
+#### Issue 4: "+N more" 기능 확장 불가
+
+**문제:**
+- "+N more" 표시가 클릭 불가능한 `<span>` 요소
+- 사용자가 전체 feature 목록을 볼 수 없음
+
+**해결:**
+```typescript
+// ProductCard.tsx - 확장 가능한 버튼으로 변경
+const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
+
+{(isFeaturesExpanded ? product.features : product.features.slice(0, 5)).map((feature) => (
+  <span key={feature.name} className="...">
+    {feature.name}
+  </span>
+))}
+{product.features.length > 5 && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      setIsFeaturesExpanded(!isFeaturesExpanded);
+    }}
+    className="px-2 py-0.5 text-[#0f7b6c] text-xs hover:underline cursor-pointer"
+  >
+    {isFeaturesExpanded ? "Show less" : `+${product.features.length - 5} more`}
+  </button>
+)}
+```
+
+---
+
+### 9.1.2 Phase 5.3-5.4: Multi-env 분리 개선 + Mobile SDK 표시 (2026-01-25)
+
+> **Status**: ✅ COMPLETE (2026-01-25)
+>
+> **Issues Resolved:**
+> 1. Mobile Products에 SDK 제품 미표시 (Navigation SDK, Maps SDK 등)
+> 2. Select All 버튼 Multi-environment 미작동
+> 3. Map Display 자동 추천 required 플래그 충돌
+> 4. Embed Code 미표시 (Issue 3과 연쇄)
+
+#### Issue 1: Mobile SDK 미표시 (P0)
+
+**문제:**
+- Mobile Products 섹션에 API 제품만 표시 (Routes: Compute Routes Pro - API)
+- SDK 제품 없음 (Navigation SDK, Maps SDK 등)
+- SDK boost 로직 존재하지만 SDK가 candidate에 없어서 적용 불가
+
+**근본 원인:**
+- SDK features는 "Point-to-Point Routing" 매핑에 있음 (Turn-by-turn Navigation, Voice instructions 등)
+- 사용자 요청 "Route Optimization"은 "Route Optimization" 매핑에만 있음
+- Agent 2가 SDK를 candidate에 포함하지 않음 → SDK boost 적용 불가
+
+**해결:**
+```json
+// backend/data/feature_registry.json
+"Route Optimization": [
+  // ... 기존 49개 features ...
+
+  // SDK Navigation features 추가 (13개)
+  "Turn-by-turn Navigation",
+  "Turn By Turn Navigation",
+  "Voice instructions playback",
+  "Voice Guidance",
+  "Routing and rerouting",
+  "Navigation Instructions",
+  "Real Time Navigation",
+  "Offline Navigation",
+  "Rerouting",
+  "Traffic Rerouting"
+  // ...
+]
+```
+
+**효과:**
+- Agent 2가 SDK를 candidate에 포함
+- 기존 `_apply_mobile_sdk_boost()` 로직이 +20점 boost 적용
+- Mobile Products 섹션에 SDK 상위 표시
+
+#### Issue 2: Select All 버튼 (P0)
+
+**문제:**
+- Multi-environment 모드에서 "Select all Google products" 버튼 미작동
+- `onSelectionChange()`에 `environment` 파라미터 누락
+
+**해결:**
+```typescript
+// frontend/src/components/products/CombinedProductPreview.tsx
+const handleSelectAllVendorRequired = useCallback(() => {
+  if (isMultiEnvironment && matchResult.environments) {
+    matchResult.environments.forEach((env) => {
+      const environmentType = env.id as EnvironmentType;
+      env.categories.forEach((category) => {
+        // ... 제품 선택 로직
+        onSelectionChange(category.id, bestProduct.id, true, environmentType);  // environment 추가!
+      });
+    });
+  }
+  // ...
+}, [...]);
+```
+
+#### Issue 3: Map Display 자동 추천 충돌 (P1)
+
+**문제:**
+- `_is_category_required()`가 map_display에 항상 `True` 반환
+- `_apply_auto_map_display()`가 `required: False` 설정과 충돌
+
+**해결:**
+```python
+# backend/services/product_matcher.py
+def _is_category_required(self, category_id: str, required_features: List[str],
+                          auto_recommended: bool = False) -> bool:
+    # Auto-recommended는 required 아님
+    if auto_recommended:
+        return False
+
+    # map_display는 명시적 요청시만 required
+    if category_id == "map_display":
+        map_keywords = ['map-display', 'base-map', 'map-rendering', ...]
+        return any(any(kw in f.lower() for kw in map_keywords) for f in required_features)
+    # ...
+
+def _apply_auto_map_display(self, categories_map: Dict):
+    if 'map_display' in categories_map:
+        # required=True인 경우 auto_recommended 마킹 안함
+        if not categories_map['map_display'].get('required', False):
+            categories_map['map_display']['auto_recommended'] = True
+    # ...
+```
+
+#### Issue 4: Embed Code 미표시 (P1)
+
+**문제:**
+- `featureStatus.allRequiredCovered` 조건으로 Embed Code 숨겨짐
+- Issue 3으로 인해 Map Display가 `required=True`인데 선택 안하면 조건 불충족
+
+**해결:**
+- Issue 3 수정으로 자동 해결
+- Map Display가 `required=False`이면 allRequiredCovered 조건 충족
+
+**파일 변경:**
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `backend/data/feature_registry.json` | "Route Optimization" 매핑에 SDK navigation features 13개 추가 |
+| `backend/services/product_matcher.py` | `_is_category_required()`, `_apply_auto_map_display()` 수정 |
+| `frontend/src/components/products/CombinedProductPreview.tsx` | `handleSelectAllVendorRequired()` environment 파라미터 추가 |
+| `frontend/src/lib/environmentDetector.ts` | MOBILE_APPLICATIONS/BACKEND_APPLICATIONS 상수 확장 |
 
 ---
 
@@ -1076,10 +1358,10 @@ async def match_products_streaming(request: RequirementsRequest):
 | 1 | Vehicle Type 지원 | Medium | P1 | ✅ COMPLETE |
 | 3 | SDK/API 우선순위 | Medium | P1 | ✅ COMPLETE |
 | 2 | 유사 API 구분 | High | P2 | ✅ COMPLETE |
+| 6 | Map Display 자동 추천 | Low | P2 | ✅ COMPLETE |
+| **5** | **Application Filter + Mobile SDK Priority** | Medium | **P1** | ✅ COMPLETE (2026-01-24) |
 | **8** | **key_features → features 마이그레이션** | High | **P0** | 🔄 IN PROGRESS |
 | **7** | **로딩 시간 최적화 (캐싱)** | Medium | **P0** | 🆕 NEW |
-| **5** | **Required Feature 미커버 수정** | Medium | **P1** | 🆕 NEW |
-| **6** | **Map Display 자동 추천** | Low | **P2** | 🆕 NEW |
 
 ---
 
@@ -1465,3 +1747,4 @@ export interface Product {
 | 1.2 | 2026-01-22 | Added Phase 5-7: SDK vs API 필터 개선 (57% 제품 누락 해결), Map Display 자동 추천, 로딩 시간 최적화 (캐싱/병렬처리) | Claude Code |
 | 1.3 | 2026-01-22 | Phase 5 안전장치 추가: use_case_relevance 임계값으로 무관 제품(Weather, Solar 등) 제외 | Claude Code |
 | 1.4 | 2026-01-22 | Phase 8 추가: key_features → features 마이그레이션 계획 (6개 백엔드 파일 + 프론트엔드 수정) | Claude Code |
+| 1.5 | 2026-01-25 | Phase 5.3-5.4 완료: Mobile SDK 표시 (feature_registry 매핑 수정), Select All 버튼 environment 파라미터, Map Display required 플래그 충돌 해결 | Claude Code |
