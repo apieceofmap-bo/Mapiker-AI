@@ -6,8 +6,20 @@
 import { EnvironmentType, Product, Category } from './types';
 
 // Application IDs that trigger multi-environment mode
-const MOBILE_APPLICATIONS = ['mobile-app', 'driver-app'];
-const BACKEND_APPLICATIONS = ['backend-operations'];
+// Extended to handle various chatbot extraction patterns
+const MOBILE_APPLICATIONS = [
+  'mobile-app',
+  'driver-app',
+  'driver-mobile-app',  // Chatbot may extract this variant
+  'consumer-app',
+  'ios-app',
+  'android-app'
+];
+const BACKEND_APPLICATIONS = [
+  'backend-operations',
+  'server-side',
+  'backend-api'
+];
 
 /**
  * Detect which environment a product belongs to based on data_format and name
@@ -29,12 +41,19 @@ export function detectProductEnvironment(
 
 /**
  * Check if the application selection requires multi-environment mode
+ * Handles both array and comma-separated string formats from chatbot
  */
 export function isMultiEnvironmentRequest(application: string | string[]): boolean {
-  if (!Array.isArray(application)) return false;
+  // Convert comma-separated string to array if needed
+  const appArray = Array.isArray(application)
+    ? application
+    : application.split(',').map(a => a.trim()).filter(a => a.length > 0);
 
-  const hasMobile = application.some(a => MOBILE_APPLICATIONS.includes(a));
-  const hasBackend = application.some(a => BACKEND_APPLICATIONS.includes(a));
+  // Need at least 2 applications to be multi-environment
+  if (appArray.length < 2) return false;
+
+  const hasMobile = appArray.some(a => MOBILE_APPLICATIONS.includes(a));
+  const hasBackend = appArray.some(a => BACKEND_APPLICATIONS.includes(a));
 
   return hasMobile && hasBackend;
 }
@@ -107,5 +126,17 @@ export const ENVIRONMENT_SECTIONS: Record<EnvironmentType, {
     label: 'Backend Products',
     icon: '🖥️',
     description: 'Products for server-side operations (APIs recommended)'
+  },
+  web: {
+    id: 'web',
+    label: 'Web Products',
+    icon: '🌐',
+    description: 'Products for web frontend applications'
+  },
+  other: {
+    id: 'other',
+    label: 'Other Products',
+    icon: '📦',
+    description: 'General purpose products'
   }
 };

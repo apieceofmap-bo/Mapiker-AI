@@ -24,11 +24,22 @@ export interface SalesLeadRequest {
 }
 
 // Environment types for Mobile + Backend separation
-export type EnvironmentType = 'mobile' | 'backend';
+export type EnvironmentType = 'mobile' | 'backend' | 'web' | 'other';
 
 export interface EnvironmentSelectionState {
-  mobile: SelectionState;
-  backend: SelectionState;
+  [key: string]: SelectionState; // Supports dynamic environment types
+}
+
+// Environment result from multi-environment product matching
+export interface EnvironmentResult {
+  id: string;                      // "mobile", "backend", "web"
+  name: string;                    // "Mobile Products", "Backend Products"
+  icon: string;                    // "📱", "🖥️"
+  description: string;             // "Products for mobile app development (driver-app)"
+  applications: string[];          // ["driver-app", "mobile-app"]
+  categories: Category[];
+  total_matched: number;
+  feature_coverage: FeatureCoverage;
 }
 
 // Requirements types
@@ -96,9 +107,11 @@ export interface FeatureCoverage {
 
 export interface MatchResponse {
   categories: Category[];
+  environments?: EnvironmentResult[];  // Multi-environment results (new)
   total_matched: number;
   feature_coverage: FeatureCoverage;
   required_features: string[];
+  is_multi_environment?: boolean;      // True if multiple environments
 }
 
 // Selection state - supports single or multiple product selection per category

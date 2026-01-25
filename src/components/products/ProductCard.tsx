@@ -26,6 +26,7 @@ export default function ProductCard({
   isRecommended = false,
 }: ProductCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState(false);
   const [showSimilarComparison, setShowSimilarComparison] = useState(false);
 
   const colors = providerColors[product.provider] || {
@@ -138,9 +139,9 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Key Features (limited) */}
+          {/* Key Features (expandable) */}
           <div className="flex flex-wrap gap-1 mt-2">
-            {product.features.slice(0, 5).map((feature) => (
+            {(isFeaturesExpanded ? product.features : product.features.slice(0, 5)).map((feature) => (
               <span
                 key={feature.name}
                 className="px-2 py-0.5 bg-[#f7f6f3] text-[#787774] text-xs rounded"
@@ -149,9 +150,15 @@ export default function ProductCard({
               </span>
             ))}
             {product.features.length > 5 && (
-              <span className="px-2 py-0.5 text-[#9b9a97] text-xs">
-                +{product.features.length - 5} more
-              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFeaturesExpanded(!isFeaturesExpanded);
+                }}
+                className="px-2 py-0.5 text-[#0f7b6c] text-xs hover:underline cursor-pointer"
+              >
+                {isFeaturesExpanded ? "Show less" : `+${product.features.length - 5} more`}
+              </button>
             )}
           </div>
 

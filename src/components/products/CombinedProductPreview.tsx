@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { MatchResponse, SelectionState, Product, Requirements, EnvironmentType, EnvironmentSelectionState } from "@/lib/types";
+import { MatchResponse, SelectionState, Product, Requirements, EnvironmentType, EnvironmentSelectionState, Category } from "@/lib/types";
 import { isMultiEnvironmentRequest, filterCategoriesByEnvironment, ENVIRONMENT_SECTIONS } from "@/lib/environmentDetector";
 import CategoryGroup from "./CategoryGroup";
 import EnvironmentSection from "./EnvironmentSection";
@@ -109,23 +109,51 @@ export default function CombinedProductPreview({
     return products.filter((p) => p.provider === vendorFilter);
   }, [vendorFilter]);
 
-  // Select all products from the current vendor for required categories
+  // Select all products from the current vendor across all categories
+  // In multi-environment mode, iterates through environment-specific categories
   const handleSelectAllVendorRequired = useCallback(() => {
     if (vendorFilter === "all") return;
 
-    matchResult.categories.forEach((category) => {
-      if (!category.required) return;
-
-      // Find the first product from the selected vendor in this category
-      const vendorProduct = category.products.find(
+    // Helper to select best product from a category
+    const selectBestProduct = (category: Category, environment?: EnvironmentType) => {
+      const vendorProducts = category.products.filter(
         (p) => p.provider === vendorFilter
       );
 
-      if (vendorProduct) {
-        onSelectionChange(category.id, vendorProduct.id, true);
+      if (vendorProducts.length > 0) {
+        // Sort by matched_features count (descending), then by match_score
+        const bestProduct = vendorProducts.reduce((best, current) => {
+          const bestMatched = best.matched_features?.length || 0;
+          const currentMatched = current.matched_features?.length || 0;
+          if (currentMatched > bestMatched) return current;
+          if (currentMatched === bestMatched && current.match_score > best.match_score) return current;
+          return best;
+        });
+
+        // Pass environment parameter for multi-environment mode
+        onSelectionChange(category.id, bestProduct.id, true, environment);
       }
-    });
-  }, [vendorFilter, matchResult.categories, onSelectionChange]);
+    };
+
+    if (isMultiEnvironment && matchResult.environments) {
+      // Multi-environment mode: iterate through each environment separately
+      matchResult.environments.forEach((env) => {
+        const environmentType = env.id as EnvironmentType;
+        env.categories.forEach((category) => {
+          selectBestProduct(category, environmentType);
+        });
+      });
+    } else if (isMultiEnvironment) {
+      // Fallback to client-side filtering if environments not available
+      const mobileFiltered = filterCategoriesByEnvironment(matchResult.categories, 'mobile');
+      const backendFiltered = filterCategoriesByEnvironment(matchResult.categories, 'backend');
+      mobileFiltered.forEach((category) => selectBestProduct(category, 'mobile'));
+      backendFiltered.forEach((category) => selectBestProduct(category, 'backend'));
+    } else {
+      // Single environment mode: use all categories (no environment parameter)
+      matchResult.categories.forEach((category) => selectBestProduct(category));
+    }
+  }, [vendorFilter, matchResult.categories, matchResult.environments, isMultiEnvironment, onSelectionChange]);
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories((prev) => {
@@ -140,15 +168,32 @@ export default function CombinedProductPreview({
   };
 
   // Filter categories by environment for multi-environment mode
-  const mobileCategories = useMemo(() =>
-    isMultiEnvironment ? filterCategoriesByEnvironment(matchResult.categories, 'mobile') : [],
-    [matchResult.categories, isMultiEnvironment]
-  );
+  // Prefer backend's environments array (more accurate) over client-side filtering
+  const mobileCategories = useMemo(() => {
+    if (!isMultiEnvironment) return [];
 
-  const backendCategories = useMemo(() =>
-    isMultiEnvironment ? filterCategoriesByEnvironment(matchResult.categories, 'backend') : [],
-    [matchResult.categories, isMultiEnvironment]
-  );
+    // Use backend's environments array if available
+    if (matchResult.environments) {
+      const mobileEnv = matchResult.environments.find(e => e.id === 'mobile');
+      if (mobileEnv) return mobileEnv.categories;
+    }
+
+    // Fallback to client-side filtering
+    return filterCategoriesByEnvironment(matchResult.categories, 'mobile');
+  }, [matchResult.categories, matchResult.environments, isMultiEnvironment]);
+
+  const backendCategories = useMemo(() => {
+    if (!isMultiEnvironment) return [];
+
+    // Use backend's environments array if available
+    if (matchResult.environments) {
+      const backendEnv = matchResult.environments.find(e => e.id === 'backend');
+      if (backendEnv) return backendEnv.categories;
+    }
+
+    // Fallback to client-side filtering
+    return filterCategoriesByEnvironment(matchResult.categories, 'backend');
+  }, [matchResult.categories, matchResult.environments, isMultiEnvironment]);
 
   // Get the appropriate selections based on mode
   const getSelectionsForEnv = (env?: EnvironmentType): SelectionState => {
@@ -610,7 +655,7 @@ export default function CombinedProductPreview({
 
           {/* Map Preview */}
           <div className="bg-white rounded-md border border-[#e9e9e7] overflow-hidden p-4">
-            {featureStatus.allRequiredCovered && requirements ? (
+            {selectedProducts.length > 0 && requirements ? (
               (() => {
                 const selectedCats = isMultiEnvironment
                   ? Object.keys(getSelectionsForEnv('mobile')).filter(
@@ -629,20 +674,31 @@ export default function CombinedProductPreview({
                 const mapKey = `map-${requirements.use_case}-${requirements.region}-${mapProvider}-${selectedCats.join(',')}`;
 
                 return (
-                  <MapPreview
-                    key={mapKey}
-                    useCase={requirements.use_case}
-                    region={requirements.region}
-                    selectedCategories={selectedCats}
-                    provider={mapProvider}
-                  />
+                  <div>
+                    {/* Warning: Show when not all required features are covered */}
+                    {!featureStatus.allRequiredCovered && (
+                      <div className="mb-3 p-3 bg-[rgba(223,171,1,0.08)] border border-[rgba(223,171,1,0.2)] rounded-lg">
+                        <p className="text-sm text-[#b8860b]">
+                          ⚠️ {featureStatus.coveredRequiredCount}/{featureStatus.totalRequired} required features covered.
+                          Select more products to complete your setup.
+                        </p>
+                      </div>
+                    )}
+                    <MapPreview
+                      key={mapKey}
+                      useCase={requirements.use_case}
+                      region={requirements.region}
+                      selectedCategories={selectedCats}
+                      provider={mapProvider}
+                    />
+                  </div>
                 );
               })()
             ) : (
               <div className="aspect-video bg-[#f7f6f3] rounded-md flex items-center justify-center">
                 <div className="text-center text-[#9b9a97]">
                   <div className="text-5xl mb-3 opacity-50">🗺️</div>
-                  <p className="font-medium">Select required products</p>
+                  <p className="font-medium">Select at least one product</p>
                   <p className="text-sm">to see the preview</p>
                 </div>
               </div>
