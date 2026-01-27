@@ -1,463 +1,616 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Project, SelectionState } from "@/lib/types";
+import {
+  QualityComparisonData,
+  calculateQualitySummary,
+  getScoreColor,
+  getScoreLabel,
+} from "@/lib/qualityDimensions";
+import { generateMockComparisonData } from "@/lib/mockQualityData";
+import {
+  DimensionScoreCard,
+  ComparisonScoreRow,
+  ScoreLegend,
+} from "@/components/quality/DimensionScoreCard";
+
+// Icons from @heroicons/react
+import {
+  CheckCircleIcon,
+  CircleStackIcon,
+  MapPinIcon,
+  BuildingOffice2Icon,
+  HomeIcon,
+  MapIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  LockClosedIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
 
 interface QualityComparisonProps {
   projects: Project[];
 }
 
-interface BasicMetrics {
-  avgMatchScore: number;
-  featureCoverage: number;
-  vendorCount: number;
-  categoryCount: number;
-  totalProducts: number;
-}
+// Icon mapping
+const DIMENSION_ICONS: Record<string, React.ReactNode> = {
+  CheckCircle: <CheckCircleIcon className="w-5 h-5" />,
+  Database: <CircleStackIcon className="w-5 h-5" />,
+  MapPin: <MapPinIcon className="w-5 h-5" />,
+  Building: <BuildingOffice2Icon className="w-5 h-5" />,
+  Home: <HomeIcon className="w-5 h-5" />,
+  Navigation: <MapIcon className="w-5 h-5" />,
+};
 
-// Demo quality evaluation metrics (for Phase 3 - random data)
-interface AdvancedQualityMetrics {
-  geocodingAccuracy: number;
-  routeOptimization: number;
-  mapCoverage: number;
-  dataFreshness: number;
-  apiReliability: number;
-  responseTime: number; // in ms
-  overallScore: number;
-}
+// =============================================================================
+// Helper Functions
+// =============================================================================
 
-function calculateBasicMetrics(project: Project): BasicMetrics | null {
-  if (!project.match_result) return null;
+function getSelectedProducts(project: Project) {
+  if (!project.match_result) return [];
 
   const selectionState = project.selected_products as SelectionState;
   const selectedProductIds = new Set<string>();
 
-  // Handle both single values and arrays
-  Object.values(selectionState).forEach(value => {
+  Object.values(selectionState).forEach((value) => {
     if (!value) return;
     if (Array.isArray(value)) {
-      value.forEach(id => selectedProductIds.add(id));
+      value.forEach((id) => selectedProductIds.add(id));
     } else {
       selectedProductIds.add(value);
     }
   });
 
-  let totalScore = 0;
-  let productCount = 0;
-  const vendors = new Set<string>();
-  const categories = new Set<string>();
+  const products: {
+    productId: string;
+    productName: string;
+    provider: string;
+    category: string;
+  }[] = [];
 
   project.match_result.categories.forEach((category) => {
     category.products.forEach((product) => {
       if (selectedProductIds.has(product.id)) {
-        totalScore += product.match_score;
-        productCount++;
-        vendors.add(product.provider);
-        categories.add(category.id);
+        products.push({
+          productId: product.id,
+          productName: product.product_name,
+          provider: product.provider,
+          category: category.name,
+        });
       }
     });
   });
 
-  const featureCoverage = project.match_result.feature_coverage?.coverage_percent || 0;
-
-  return {
-    avgMatchScore: productCount > 0 ? totalScore / productCount : 0,
-    featureCoverage,
-    vendorCount: vendors.size,
-    categoryCount: categories.size,
-    totalProducts: productCount,
-  };
+  return products;
 }
 
-// Generate deterministic random demo data based on project ID
-function generateDemoQualityMetrics(projectId: string): AdvancedQualityMetrics {
-  // Use project ID to seed pseudo-random values
-  const hash = projectId.split('').reduce((acc, char) => {
-    return ((acc << 5) - acc) + char.charCodeAt(0);
-  }, 0);
+// =============================================================================
+// Feature Availability Matrix Component
+// =============================================================================
 
-  const seededRandom = (seed: number, offset: number) => {
-    const x = Math.sin(seed + offset) * 10000;
-    return (x - Math.floor(x)) * 100;
-  };
-
-  const geocodingAccuracy = 75 + seededRandom(hash, 1) * 0.2;
-  const routeOptimization = 70 + seededRandom(hash, 2) * 0.25;
-  const mapCoverage = 80 + seededRandom(hash, 3) * 0.15;
-  const dataFreshness = 65 + seededRandom(hash, 4) * 0.3;
-  const apiReliability = 90 + seededRandom(hash, 5) * 0.08;
-  const responseTime = 50 + seededRandom(hash, 6) * 2;
-
-  const overallScore = (geocodingAccuracy + routeOptimization + mapCoverage + dataFreshness + apiReliability) / 5;
-
-  return {
-    geocodingAccuracy: Math.min(geocodingAccuracy, 98),
-    routeOptimization: Math.min(routeOptimization, 95),
-    mapCoverage: Math.min(mapCoverage, 99),
-    dataFreshness: Math.min(dataFreshness, 95),
-    apiReliability: Math.min(apiReliability, 99.9),
-    responseTime: Math.round(responseTime),
-    overallScore: Math.min(overallScore, 97),
-  };
+interface FeatureMatrixProps {
+  data: QualityComparisonData;
+  projectAName: string;
+  projectBName: string;
 }
 
-function MetricBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const percentage = max > 0 ? (value / max) * 100 : 0;
+function FeatureAvailabilityMatrix({
+  data,
+  projectAName,
+  projectBName,
+}: FeatureMatrixProps) {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+
   return (
-    <div className="w-full bg-[#e9e9e7] rounded-full h-2">
-      <div
-        className={`h-2 rounded-full ${color}`}
-        style={{ width: `${Math.min(percentage, 100)}%` }}
-      />
+    <DimensionScoreCard
+      title="Feature Availability"
+      description="Comparison of features covered by selected products"
+      icon={DIMENSION_ICONS.CheckCircle}
+    >
+      <div className="space-y-3">
+        {data.featureAvailability.comparisons.map((comparison) => (
+          <div
+            key={comparison.categoryName}
+            className="border border-[#e9e9e7] rounded-lg overflow-hidden"
+          >
+            {/* Category Header */}
+            <button
+              onClick={() =>
+                setExpandedCategory(
+                  expandedCategory === comparison.categoryName
+                    ? null
+                    : comparison.categoryName
+                )
+              }
+              className="w-full flex items-center justify-between px-4 py-3 bg-[#f7f6f3] hover:bg-[#efeeea] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-sm text-[#37352f]">
+                  {comparison.categoryName}
+                </span>
+                <span className="text-xs text-[#9b9a97]">
+                  {comparison.features.filter((f) => f.projectACovered).length}/
+                  {comparison.features.filter((f) => f.projectBCovered).length}{" "}
+                  features
+                </span>
+              </div>
+              {expandedCategory === comparison.categoryName ? (
+                <ChevronUpIcon className="w-4 h-4 text-[#9b9a97]" />
+              ) : (
+                <ChevronDownIcon className="w-4 h-4 text-[#9b9a97]" />
+              )}
+            </button>
+
+            {/* Feature List */}
+            <AnimatePresence>
+              {expandedCategory === comparison.categoryName && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="p-4">
+                    {/* Product Names Row */}
+                    <div className="grid grid-cols-3 gap-2 mb-3 text-xs">
+                      <div className="font-medium text-[#9b9a97]">Feature</div>
+                      <div className="text-center truncate text-[#787774]">
+                        {comparison.projectAProduct}
+                      </div>
+                      <div className="text-center truncate text-[#787774]">
+                        {comparison.projectBProduct}
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="space-y-2">
+                      {comparison.features.map((feature) => (
+                        <div
+                          key={feature.featureName}
+                          className="grid grid-cols-3 gap-2 text-sm py-1 border-t border-[#e9e9e7]"
+                        >
+                          <div className="text-[#37352f]">
+                            {feature.featureName}
+                          </div>
+                          <div className="text-center">
+                            {feature.projectACovered ? (
+                              <span className="text-green-600">&#10003;</span>
+                            ) : (
+                              <span className="text-[#d3d3d0]">&#10007;</span>
+                            )}
+                          </div>
+                          <div className="text-center">
+                            {feature.projectBCovered ? (
+                              <span className="text-green-600">&#10003;</span>
+                            ) : (
+                              <span className="text-[#d3d3d0]">&#10007;</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        ))}
+      </div>
+    </DimensionScoreCard>
+  );
+}
+
+// =============================================================================
+// Data Coverage Component
+// =============================================================================
+
+interface DataCoverageProps {
+  projectAData: QualityComparisonData["projectA"];
+  projectBData: QualityComparisonData["projectB"];
+}
+
+function DataCoverageSection({ projectAData, projectBData }: DataCoverageProps) {
+  return (
+    <DimensionScoreCard
+      title="Data Coverage"
+      description="POI, building, and road network statistics"
+      icon={DIMENSION_ICONS.Database}
+      statistics={[
+        {
+          label: `${projectAData.projectName} - POI Count`,
+          value: projectAData.qualityReport.dataCoverage.poiCount,
+        },
+        {
+          label: `${projectBData.projectName} - POI Count`,
+          value: projectBData.qualityReport.dataCoverage.poiCount,
+        },
+        {
+          label: `${projectAData.projectName} - Roads`,
+          value: `${projectAData.qualityReport.dataCoverage.roadLengthKm.toLocaleString()} km`,
+        },
+        {
+          label: `${projectBData.projectName} - Roads`,
+          value: `${projectBData.qualityReport.dataCoverage.roadLengthKm.toLocaleString()} km`,
+        },
+      ]}
+    />
+  );
+}
+
+// =============================================================================
+// Score Comparison Components
+// =============================================================================
+
+interface ScoreComparisonSectionProps {
+  projectAData: QualityComparisonData["projectA"];
+  projectBData: QualityComparisonData["projectB"];
+  hasQualityAccess: boolean;
+}
+
+function GeocodingAccuracySection({
+  projectAData,
+  projectBData,
+  hasQualityAccess,
+}: ScoreComparisonSectionProps) {
+  const scoreA = projectAData.qualityReport.geocodingAccuracy.geocodingScore;
+  const scoreB = projectBData.qualityReport.geocodingAccuracy.geocodingScore;
+
+  return (
+    <DimensionScoreCard
+      title="Geocoding Accuracy"
+      description="Address-to-coordinate conversion accuracy"
+      icon={DIMENSION_ICONS.MapPin}
+      scores={
+        hasQualityAccess
+          ? [
+              { label: projectAData.projectName, value: scoreA },
+              { label: projectBData.projectName, value: scoreB },
+            ]
+          : undefined
+      }
+    >
+      {!hasQualityAccess && (
+        <div className="space-y-3">
+          <ComparisonScoreRow
+            label="Geocoding Score"
+            projectAScore={scoreA}
+            projectBScore={scoreB}
+            projectAName={projectAData.projectName}
+            projectBName={projectBData.projectName}
+          />
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+            <InformationCircleIcon className="w-4 h-4" />
+            <span>Demo data - Purchase Quality Report for actual metrics</span>
+          </div>
+        </div>
+      )}
+    </DimensionScoreCard>
+  );
+}
+
+function POIQualitySection({
+  projectAData,
+  projectBData,
+  hasQualityAccess,
+}: ScoreComparisonSectionProps) {
+  return (
+    <DimensionScoreCard
+      title="POI & Address Quality"
+      description="Point of interest coverage and position accuracy"
+      icon={DIMENSION_ICONS.Building}
+    >
+      <div className="space-y-3">
+        <ComparisonScoreRow
+          label="Coverage Score"
+          projectAScore={projectAData.qualityReport.poiQuality.coverageScore}
+          projectBScore={projectBData.qualityReport.poiQuality.coverageScore}
+          projectAName={projectAData.projectName}
+          projectBName={projectBData.projectName}
+        />
+        <ComparisonScoreRow
+          label="Position Accuracy"
+          projectAScore={
+            projectAData.qualityReport.poiQuality.positionAccuracyScore
+          }
+          projectBScore={
+            projectBData.qualityReport.poiQuality.positionAccuracyScore
+          }
+          projectAName={projectAData.projectName}
+          projectBName={projectBData.projectName}
+        />
+        {!hasQualityAccess && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+            <InformationCircleIcon className="w-4 h-4" />
+            <span>Demo data</span>
+          </div>
+        )}
+      </div>
+    </DimensionScoreCard>
+  );
+}
+
+function BuildingCoverageSection({
+  projectAData,
+  projectBData,
+}: ScoreComparisonSectionProps) {
+  return (
+    <DimensionScoreCard
+      title="Building Coverage"
+      description="Building footprint and height data availability"
+      icon={DIMENSION_ICONS.Home}
+      statisticsOnly
+      statisticsOnlyMessage="Statistics only - no quality score for this dimension"
+      statistics={[
+        {
+          label: `${projectAData.projectName} - Count`,
+          value: projectAData.qualityReport.buildingCoverage.buildingCount,
+        },
+        {
+          label: `${projectBData.projectName} - Count`,
+          value: projectBData.qualityReport.buildingCoverage.buildingCount,
+        },
+        {
+          label: `${projectAData.projectName} - Height Data`,
+          value: `${projectAData.qualityReport.buildingCoverage.heightDataAvailability}%`,
+        },
+        {
+          label: `${projectBData.projectName} - Height Data`,
+          value: `${projectBData.qualityReport.buildingCoverage.heightDataAvailability}%`,
+        },
+      ]}
+    />
+  );
+}
+
+function RoutingQualitySection({
+  projectAData,
+  projectBData,
+  hasQualityAccess,
+}: ScoreComparisonSectionProps) {
+  return (
+    <DimensionScoreCard
+      title="Routing Quality"
+      description="Route calculation success rate and efficiency"
+      icon={DIMENSION_ICONS.Navigation}
+    >
+      <div className="space-y-3">
+        <ComparisonScoreRow
+          label="Success Rate"
+          projectAScore={
+            projectAData.qualityReport.routingQuality.successRateScore
+          }
+          projectBScore={
+            projectBData.qualityReport.routingQuality.successRateScore
+          }
+          projectAName={projectAData.projectName}
+          projectBName={projectBData.projectName}
+        />
+        <ComparisonScoreRow
+          label="Efficiency"
+          projectAScore={projectAData.qualityReport.routingQuality.efficiencyScore}
+          projectBScore={projectBData.qualityReport.routingQuality.efficiencyScore}
+          projectAName={projectAData.projectName}
+          projectBName={projectBData.projectName}
+        />
+        <div className="px-3 py-2 bg-[#f7f6f3] rounded-lg">
+          <div className="flex items-center gap-2 text-xs text-[#9b9a97]">
+            <span>Guidance Accuracy:</span>
+            <span className="text-[#d3d3d0]">TBD (Phase 2)</span>
+          </div>
+        </div>
+        {!hasQualityAccess && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+            <InformationCircleIcon className="w-4 h-4" />
+            <span>Demo data</span>
+          </div>
+        )}
+      </div>
+    </DimensionScoreCard>
+  );
+}
+
+// =============================================================================
+// Executive Summary Component
+// =============================================================================
+
+interface ExecutiveSummaryProps {
+  projectAData: QualityComparisonData["projectA"];
+  projectBData: QualityComparisonData["projectB"];
+  hasQualityAccess: boolean;
+}
+
+function ExecutiveSummary({
+  projectAData,
+  projectBData,
+  hasQualityAccess,
+}: ExecutiveSummaryProps) {
+  const summaryA = calculateQualitySummary(projectAData.qualityReport);
+  const summaryB = calculateQualitySummary(projectBData.qualityReport);
+
+  return (
+    <div className="bg-[#f7f6f3] rounded-xl p-6 mb-6 border border-[#e9e9e7]">
+      <h3 className="text-lg font-semibold text-[#37352f] mb-4">
+        Executive Summary
+      </h3>
+
+      <div className="grid grid-cols-2 gap-6">
+        {/* Project A */}
+        <div className="bg-white rounded-lg p-4 border border-[#e9e9e7]">
+          <div className="text-sm text-[#787774] mb-1">
+            {projectAData.projectName}
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span
+              className="text-3xl font-bold"
+              style={{ color: getScoreColor(summaryA.overallScore) }}
+            >
+              {summaryA.overallScore.toFixed(0)}
+            </span>
+            <span
+              className="text-sm"
+              style={{ color: getScoreColor(summaryA.overallScore) }}
+            >
+              {getScoreLabel(summaryA.overallScore)}
+            </span>
+          </div>
+          {!hasQualityAccess && (
+            <div className="mt-2 text-xs text-amber-600 flex items-center gap-1">
+              <LockClosedIcon className="w-3 h-3" />
+              Demo
+            </div>
+          )}
+        </div>
+
+        {/* Project B */}
+        <div className="bg-white rounded-lg p-4 border border-[#e9e9e7]">
+          <div className="text-sm text-[#787774] mb-1">
+            {projectBData.projectName}
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span
+              className="text-3xl font-bold"
+              style={{ color: getScoreColor(summaryB.overallScore) }}
+            >
+              {summaryB.overallScore.toFixed(0)}
+            </span>
+            <span
+              className="text-sm"
+              style={{ color: getScoreColor(summaryB.overallScore) }}
+            >
+              {getScoreLabel(summaryB.overallScore)}
+            </span>
+          </div>
+          {!hasQualityAccess && (
+            <div className="mt-2 text-xs text-amber-600 flex items-center gap-1">
+              <LockClosedIcon className="w-3 h-3" />
+              Demo
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <ScoreLegend />
+      </div>
     </div>
   );
 }
 
-function LockedMetricPlaceholder() {
-  return (
-    <div className="w-full bg-[#e9e9e7] rounded-full h-2 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-[#e9e9e7] via-[#d3d3d3] to-[#e9e9e7] animate-shimmer"
-           style={{ backgroundSize: '200% 100%' }} />
-    </div>
-  );
-}
+// =============================================================================
+// Main Component
+// =============================================================================
 
 export default function QualityComparison({ projects }: QualityComparisonProps) {
-  // Calculate basic metrics for all projects
-  const projectData = useMemo(() => {
-    return projects.map((project) => ({
-      project,
-      basicMetrics: calculateBasicMetrics(project),
-      advancedMetrics: generateDemoQualityMetrics(project.id),
-      // Check if quality data should be shown (report purchased or test key issued)
-      hasQualityAccess: project.quality_report_requested,
-    }));
-  }, [projects]);
+  // Check if we have at least 2 projects to compare
+  const canCompare = projects.length >= 2;
 
-  // Check if any project has basic metrics
-  const hasAnyMetrics = projectData.some((pd) => pd.basicMetrics !== null);
+  // Generate mock comparison data
+  const comparisonData = useMemo(() => {
+    if (!canCompare) return null;
 
-  if (!hasAnyMetrics) {
+    const projectA = projects[0];
+    const projectB = projects[1];
+
+    const productsA = getSelectedProducts(projectA);
+    const productsB = getSelectedProducts(projectB);
+
+    return generateMockComparisonData(
+      { id: projectA.id, name: projectA.name, products: productsA },
+      { id: projectB.id, name: projectB.name, products: productsB },
+      "Global"
+    );
+  }, [projects, canCompare]);
+
+  // Check if any project has quality access
+  const hasQualityAccess = projects.some((p) => p.quality_report_requested);
+
+  // No comparison possible
+  if (!canCompare || !comparisonData) {
     return (
       <div className="p-8 text-center">
         <div className="text-4xl mb-3">&#x1F4CA;</div>
         <h3 className="text-lg font-semibold text-[#37352f] mb-2">
-          No quality data available
+          Select 2 projects to compare
         </h3>
         <p className="text-sm text-[#787774]">
-          Complete the product matching step for at least one project to see quality metrics.
+          Quality comparison requires at least 2 projects with matched products.
         </p>
       </div>
     );
   }
 
-  // Find max values for bar scaling
-  const maxScore = Math.max(...projectData.map((pd) => pd.basicMetrics?.avgMatchScore || 0));
-  const maxVendors = Math.max(...projectData.map((pd) => pd.basicMetrics?.vendorCount || 0));
-  const maxProducts = Math.max(...projectData.map((pd) => pd.basicMetrics?.totalProducts || 0));
-  const bestCoverage = Math.max(...projectData.map((pd) => pd.basicMetrics?.featureCoverage || 0));
-
-  const basicMetricsDef = [
-    {
-      label: "Average Match Score",
-      key: "avgMatchScore" as const,
-      format: (v: number) => v.toFixed(1),
-      max: 100,
-      color: "bg-[#2eaadc]",
-      description: "How well products match requirements",
-    },
-    {
-      label: "Feature Coverage",
-      key: "featureCoverage" as const,
-      format: (v: number) => `${v.toFixed(0)}%`,
-      max: 100,
-      color: "bg-[#0f7b6c]",
-      description: "Percentage of required features covered",
-    },
-    {
-      label: "Vendor Diversity",
-      key: "vendorCount" as const,
-      format: (v: number) => `${v} vendor${v !== 1 ? "s" : ""}`,
-      max: maxVendors,
-      color: "bg-[#9b59b6]",
-      description: "Number of different providers",
-    },
-    {
-      label: "Total Products",
-      key: "totalProducts" as const,
-      format: (v: number) => v.toString(),
-      max: maxProducts,
-      color: "bg-[#e67e22]",
-      description: "Products selected",
-    },
-  ];
-
-  const advancedMetricsDef = [
-    {
-      label: "Geocoding Accuracy",
-      key: "geocodingAccuracy" as const,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      max: 100,
-      color: "bg-[#3498db]",
-      description: "Address-to-coordinate conversion accuracy",
-    },
-    {
-      label: "Route Optimization",
-      key: "routeOptimization" as const,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      max: 100,
-      color: "bg-[#2ecc71]",
-      description: "Routing efficiency and optimization score",
-    },
-    {
-      label: "Map Coverage",
-      key: "mapCoverage" as const,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      max: 100,
-      color: "bg-[#9b59b6]",
-      description: "Geographic data coverage completeness",
-    },
-    {
-      label: "Data Freshness",
-      key: "dataFreshness" as const,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      max: 100,
-      color: "bg-[#f39c12]",
-      description: "How up-to-date the map data is",
-    },
-    {
-      label: "API Reliability",
-      key: "apiReliability" as const,
-      format: (v: number) => `${v.toFixed(1)}%`,
-      max: 100,
-      color: "bg-[#1abc9c]",
-      description: "Service uptime and reliability",
-    },
-    {
-      label: "Response Time",
-      key: "responseTime" as const,
-      format: (v: number) => `${v}ms`,
-      max: 200,
-      color: "bg-[#e74c3c]",
-      description: "Average API response latency",
-      lowerIsBetter: true,
-    },
-  ];
-
-  // Check if any project has quality access
-  const anyHasQualityAccess = projectData.some(pd => pd.hasQualityAccess);
-
   return (
-    <div className="divide-y divide-[#e9e9e7]">
-      {/* Basic Metrics Section */}
-      <div className="p-6">
-        <h3 className="text-sm font-semibold text-[#37352f] mb-1">Basic Metrics</h3>
-        <p className="text-xs text-[#787774] mb-4">Based on product selection and feature matching</p>
-
-        <div className="space-y-6">
-          {basicMetricsDef.map((metric) => (
-            <div key={metric.key}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-[#37352f]">{metric.label}</span>
-                <span className="text-xs text-[#787774]">{metric.description}</span>
-              </div>
-              <div className="space-y-3">
-                {projectData.map(({ project, basicMetrics: m }, index) => {
-                  const value = m?.[metric.key] || 0;
-                  const isBest =
-                    (metric.key === "avgMatchScore" && value === maxScore && value > 0) ||
-                    (metric.key === "featureCoverage" && value === bestCoverage && value > 0);
-
-                  return (
-                    <div key={project.id} className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 w-32 flex-shrink-0">
-                        <span className="w-5 h-5 rounded-full bg-[#37352f] text-white text-xs flex items-center justify-center">
-                          {index + 1}
-                        </span>
-                        <span className="text-xs text-[#37352f] truncate">{project.name}</span>
-                      </div>
-                      <div className="flex-1">
-                        {m && <MetricBar value={value} max={metric.max} color={metric.color} />}
-                      </div>
-                      <div className="w-20 text-right flex items-center justify-end gap-1">
-                        <span className={`text-sm font-medium ${isBest ? "text-[#0f7b6c]" : "text-[#37352f]"}`}>
-                          {m ? metric.format(value) : "-"}
-                        </span>
-                        {isBest && (
-                          <span className="text-[10px] bg-[rgba(15,123,108,0.15)] text-[#0f7b6c] px-1.5 py-0.5 rounded-full">
-                            Best
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Advanced Quality Metrics Section */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-sm font-semibold text-[#37352f]">Advanced Quality Evaluation</h3>
-          {!anyHasQualityAccess && (
-            <span className="text-xs bg-[#fef3c7] text-[#92400e] px-2 py-1 rounded-full font-medium">
-              Demo Data
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-[#787774] mb-4">
-          {anyHasQualityAccess
-            ? "Real-world quality metrics from our evaluation platform"
-            : "Preview with sample data - purchase Quality Report or request Test Keys for actual metrics"
-          }
-        </p>
-
-        {!anyHasQualityAccess && (
-          <div className="mb-6 p-4 bg-gradient-to-r from-[#f7f6f3] to-[#fafafa] border border-[#e9e9e7] rounded-lg">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-[#37352f] rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-[#37352f] mb-1">Unlock Real Quality Data</h4>
-                <p className="text-xs text-[#787774]">
-                  The metrics below are sample data for demonstration. To see actual quality evaluation results,
-                  purchase a Quality Report or request Test Keys from the project&apos;s Quality Evaluation page.
-                </p>
-              </div>
+    <div className="p-6 space-y-6">
+      {/* Demo Data Warning */}
+      {!hasQualityAccess && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <LockClosedIcon className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-amber-800 mb-1">
+                Preview Mode - Demo Data
+              </h4>
+              <p className="text-sm text-amber-700">
+                The quality metrics shown below are sample data. Purchase a
+                Quality Report or request Test Keys from each project&apos;s
+                Quality Evaluation page to see actual metrics.
+              </p>
             </div>
           </div>
-        )}
-
-        <div className="space-y-6">
-          {advancedMetricsDef.map((metric) => (
-            <div key={metric.key}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-[#37352f]">{metric.label}</span>
-                <span className="text-xs text-[#787774]">{metric.description}</span>
-              </div>
-              <div className="space-y-3">
-                {projectData.map(({ project, advancedMetrics, hasQualityAccess }, index) => {
-                  const value = advancedMetrics[metric.key];
-                  const allValues = projectData.map(pd => pd.advancedMetrics[metric.key]);
-                  const isBest = metric.key === "responseTime"
-                    ? value === Math.min(...allValues)
-                    : value === Math.max(...allValues);
-
-                  return (
-                    <div key={project.id} className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 w-32 flex-shrink-0">
-                        <span className="w-5 h-5 rounded-full bg-[#37352f] text-white text-xs flex items-center justify-center">
-                          {index + 1}
-                        </span>
-                        <span className="text-xs text-[#37352f] truncate">{project.name}</span>
-                      </div>
-                      <div className="flex-1">
-                        {hasQualityAccess ? (
-                          <MetricBar
-                            value={metric.key === "responseTime" ? 200 - value : value}
-                            max={metric.max}
-                            color={metric.color}
-                          />
-                        ) : (
-                          <div className="relative">
-                            <MetricBar
-                              value={metric.key === "responseTime" ? 200 - value : value}
-                              max={metric.max}
-                              color={metric.color}
-                            />
-                            <div className="absolute inset-0 bg-white/50" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-20 text-right flex items-center justify-end gap-1">
-                        <span className={`text-sm font-medium ${
-                          hasQualityAccess
-                            ? (isBest ? "text-[#0f7b6c]" : "text-[#37352f]")
-                            : "text-[#9b9a97]"
-                        }`}>
-                          {hasQualityAccess ? metric.format(value) : metric.format(value)}
-                        </span>
-                        {isBest && hasQualityAccess && (
-                          <span className="text-[10px] bg-[rgba(15,123,108,0.15)] text-[#0f7b6c] px-1.5 py-0.5 rounded-full">
-                            Best
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
         </div>
-      </div>
+      )}
 
-      {/* Overall Score Summary */}
-      <div className="p-6 bg-[#f7f6f3]">
-        <h3 className="text-sm font-semibold text-[#37352f] mb-4">Overall Quality Score</h3>
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: `repeat(${projects.length}, 1fr)` }}
-        >
-          {projectData.map(({ project, basicMetrics, advancedMetrics, hasQualityAccess }, index) => {
-            // Calculate combined overall score
-            const basicScore = basicMetrics
-              ? (basicMetrics.avgMatchScore * 0.3 + basicMetrics.featureCoverage * 0.3 + Math.min(basicMetrics.vendorCount / 4, 1) * 100 * 0.1)
-              : 0;
-            const advancedScore = advancedMetrics.overallScore * 0.3;
-            const combinedScore = basicScore + advancedScore;
+      {/* Executive Summary */}
+      <ExecutiveSummary
+        projectAData={comparisonData.projectA}
+        projectBData={comparisonData.projectB}
+        hasQualityAccess={hasQualityAccess}
+      />
 
-            return (
-              <div key={project.id} className="bg-white rounded-lg p-4 border border-[#e9e9e7]">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full bg-[#37352f] text-white text-xs flex items-center justify-center">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm font-medium text-[#37352f] truncate">
-                    {project.name}
-                  </span>
-                </div>
-                <div className={`text-3xl font-bold mb-1 ${hasQualityAccess ? "text-[#37352f]" : "text-[#9b9a97]"}`}>
-                  {basicMetrics ? combinedScore.toFixed(0) : "-"}
-                </div>
-                <div className="text-xs text-[#787774] mb-3">Combined Quality Score</div>
+      {/* 6 Quality Dimensions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Dimension 1: Feature Availability */}
+        <FeatureAvailabilityMatrix
+          data={comparisonData}
+          projectAName={comparisonData.projectA.projectName}
+          projectBName={comparisonData.projectB.projectName}
+        />
 
-                {basicMetrics && (
-                  <div className="space-y-1 text-xs text-[#787774] border-t border-[#e9e9e7] pt-3">
-                    <div className="flex justify-between">
-                      <span>Match Score:</span>
-                      <span className="font-medium text-[#37352f]">{basicMetrics.avgMatchScore.toFixed(0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Coverage:</span>
-                      <span className="font-medium text-[#37352f]">{basicMetrics.featureCoverage.toFixed(0)}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Quality Index:</span>
-                      <span className={`font-medium ${hasQualityAccess ? "text-[#37352f]" : "text-[#9b9a97]"}`}>
-                        {advancedMetrics.overallScore.toFixed(0)}
-                      </span>
-                    </div>
-                  </div>
-                )}
+        {/* Dimension 2: Data Coverage */}
+        <DataCoverageSection
+          projectAData={comparisonData.projectA}
+          projectBData={comparisonData.projectB}
+        />
 
-                {!hasQualityAccess && (
-                  <div className="mt-3 pt-3 border-t border-[#e9e9e7]">
-                    <span className="text-[10px] bg-[#fef3c7] text-[#92400e] px-2 py-0.5 rounded-full">
-                      Demo data
-                    </span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {/* Dimension 3: Geocoding Accuracy */}
+        <GeocodingAccuracySection
+          projectAData={comparisonData.projectA}
+          projectBData={comparisonData.projectB}
+          hasQualityAccess={hasQualityAccess}
+        />
+
+        {/* Dimension 4: POI Quality */}
+        <POIQualitySection
+          projectAData={comparisonData.projectA}
+          projectBData={comparisonData.projectB}
+          hasQualityAccess={hasQualityAccess}
+        />
+
+        {/* Dimension 5: Building Coverage */}
+        <BuildingCoverageSection
+          projectAData={comparisonData.projectA}
+          projectBData={comparisonData.projectB}
+          hasQualityAccess={hasQualityAccess}
+        />
+
+        {/* Dimension 6: Routing Quality */}
+        <RoutingQualitySection
+          projectAData={comparisonData.projectA}
+          projectBData={comparisonData.projectB}
+          hasQualityAccess={hasQualityAccess}
+        />
       </div>
     </div>
   );

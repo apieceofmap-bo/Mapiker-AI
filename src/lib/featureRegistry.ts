@@ -270,7 +270,17 @@ export const FEATURE_CATEGORIES: Record<string, FeatureCategory> = {
   }
 };
 
-// Quality Features for evaluation
+// Quality Dimension interface (for 6-dimension evaluation)
+export interface QualityDimension {
+  id: string;
+  name: string;
+  description: string;
+  hasScore: boolean;
+  scoreCount: number;
+  icon: string;
+}
+
+// Quality Features for evaluation (Legacy - 8 features)
 export const QUALITY_FEATURES: QualityFeature[] = [
   {
     "id": "geocoding_accuracy",
@@ -311,6 +321,58 @@ export const QUALITY_FEATURES: QualityFeature[] = [
     "id": "truck_routing",
     "name": "Truck Routing",
     "description": "Commercial vehicle routing with restrictions and attributes"
+  }
+];
+
+// Quality Dimensions (6-dimension model from Quality Evaluator project)
+export const QUALITY_DIMENSIONS: QualityDimension[] = [
+  {
+    id: "feature_availability",
+    name: "Feature Availability",
+    description: "Comparison of features covered by selected products across projects",
+    hasScore: false,
+    scoreCount: 0,
+    icon: "CheckCircle"
+  },
+  {
+    id: "data_coverage",
+    name: "Data Coverage",
+    description: "POI, building footprint, and road network statistics",
+    hasScore: false,
+    scoreCount: 0,
+    icon: "Database"
+  },
+  {
+    id: "geocoding_accuracy",
+    name: "Geocoding Accuracy",
+    description: "Address-to-coordinate conversion accuracy and component completeness",
+    hasScore: true,
+    scoreCount: 1,
+    icon: "MapPin"
+  },
+  {
+    id: "poi_quality",
+    name: "POI & Address Quality",
+    description: "Point of interest coverage and position accuracy (2 scores)",
+    hasScore: true,
+    scoreCount: 2,
+    icon: "Building"
+  },
+  {
+    id: "building_coverage",
+    name: "Building Coverage",
+    description: "Building footprint and height data availability (statistics only)",
+    hasScore: false,
+    scoreCount: 0,
+    icon: "Home"
+  },
+  {
+    id: "routing_quality",
+    name: "Routing Quality",
+    description: "Route calculation success rate, efficiency, and guidance accuracy (3 scores)",
+    hasScore: true,
+    scoreCount: 3,
+    icon: "Navigation"
   }
 ];
 

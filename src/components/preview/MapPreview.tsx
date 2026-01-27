@@ -142,13 +142,20 @@ function getUseCaseDemo(useCase: string, city: typeof CITY_POIS.singapore): Demo
     case "fleetmanagement":
       return {
         title: "Fleet Management Demo",
-        description: "Real-time vehicle tracking with geofence",
+        description: "Real-time vehicle tracking with route",
         markers: [
           { lat: landmarks.stop1.lat, lng: landmarks.stop1.lng, label: "Vehicle 1", icon: "🚛" },
           { lat: landmarks.stop2.lat, lng: landmarks.stop2.lng, label: "Vehicle 2", icon: "🚛" },
           { lat: landmarks.stop3.lat, lng: landmarks.stop3.lng, label: "Vehicle 3", icon: "🚛" },
         ],
-        geofence: { center: center, radius: 3000 },
+        route: {
+          origin: { lat: landmarks.warehouse.lat, lng: landmarks.warehouse.lng },
+          destination: { lat: landmarks.stop3.lat, lng: landmarks.stop3.lng },
+          waypoints: [
+            { lat: landmarks.stop1.lat, lng: landmarks.stop1.lng },
+            { lat: landmarks.stop2.lat, lng: landmarks.stop2.lng },
+          ],
+        },
       };
 
     case "storelocator":

@@ -1,9 +1,9 @@
 import { Country, TestPeriod } from './types';
-import { QUALITY_FEATURES, QualityFeature } from './featureRegistry';
+import { QUALITY_FEATURES, QualityFeature, QUALITY_DIMENSIONS, QualityDimension } from './featureRegistry';
 
 // Re-export for backwards compatibility
-export { QUALITY_FEATURES } from './featureRegistry';
-export type { QualityFeature } from './featureRegistry';
+export { QUALITY_FEATURES, QUALITY_DIMENSIONS } from './featureRegistry';
+export type { QualityFeature, QualityDimension } from './featureRegistry';
 
 export const AVAILABLE_COUNTRIES: Country[] = [
   // Asia

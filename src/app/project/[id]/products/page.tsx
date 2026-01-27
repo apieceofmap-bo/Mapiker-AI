@@ -7,7 +7,6 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { createClient } from "@/lib/supabase";
 import { Project, SelectionState, EnvironmentSelectionState, EnvironmentType } from "@/lib/types";
 import CombinedProductPreview from "@/components/products/CombinedProductPreview";
-import Navbar from "@/components/layout/Navbar";
 import StageIndicator from "@/components/dashboard/StageIndicator";
 
 export default function ProductsPage() {
@@ -248,49 +247,40 @@ export default function ProductsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#fbfbfa]">
-        <Navbar />
-        <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
-        </div>
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#37352f]"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#fbfbfa]">
-        <Navbar />
-        <div className="text-center py-20">
-          <div className="text-4xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
-          <Link
-            href="/dashboard"
-            className="text-[#37352f] hover:underline font-medium"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
+      <div className="text-center py-20">
+        <div className="text-4xl mb-4">⚠️</div>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">{error}</h2>
+        <Link
+          href="/dashboard"
+          className="text-[#37352f] hover:underline font-medium"
+        >
+          Back to Dashboard
+        </Link>
       </div>
     );
   }
 
   if (!project || !project.match_result) {
     return (
-      <div className="min-h-screen bg-[#fbfbfa]">
-        <Navbar />
-        <div className="text-center py-20">
-          <div className="text-4xl mb-4">🔍</div>
-          <h2 className="text-xl font-semibold text-[#37352f] mb-2">
-            Project not found
-          </h2>
-          <Link
-            href="/dashboard"
-            className="text-[#37352f] hover:underline font-medium"
-          >
-            Back to Dashboard
-          </Link>
-        </div>
+      <div className="text-center py-20">
+        <div className="text-4xl mb-4">🔍</div>
+        <h2 className="text-xl font-semibold text-[#37352f] mb-2">
+          Project not found
+        </h2>
+        <Link
+          href="/dashboard"
+          className="text-[#37352f] hover:underline font-medium"
+        >
+          Back to Dashboard
+        </Link>
       </div>
     );
   }
@@ -304,12 +294,9 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbfbfa]">
-      <Navbar />
-
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <div className="mb-6">
+    <div>
+      {/* Breadcrumb */}
+      <div className="mb-6">
           <div className="flex items-center gap-2 text-sm text-[#787774]">
             <Link href="/dashboard" className="hover:text-[#37352f]">
               Dashboard
@@ -376,7 +363,6 @@ export default function ProductsPage() {
             </button>
           </div>
         </div>
-      </main>
 
       {/* Change Confirmation Modal */}
       {showChangeModal && (

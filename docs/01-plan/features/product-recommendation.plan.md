@@ -4,7 +4,7 @@
 >
 > **Author**: Claude Code
 > **Date**: 2026-01-22
-> **Status**: In Progress (v1.3)
+> **Status**: In Progress (v1.6)
 >
 > **Progress:**
 > - ✅ **Phase 4 (P0)**: Duplicate Feature Elimination - COMPLETE
@@ -19,6 +19,7 @@
 > - ✅ **Phase 5.3-5.4 (P0)**: Multi-env 분리 개선 + Mobile SDK 표시 + Map Display 자동 추천 - COMPLETE (2026-01-25)
 > - 🔄 **Phase 8 (P0)**: Unified Feature System Migration - IN PROGRESS (92%)
 > - 🆕 **Phase 7 (P0)**: Loading Time Optimization - PENDING
+> - 🆕 **Phase 9 (P1)**: Quality Evaluation Integration - PLANNING (2026-01-26)
 
 ---
 
@@ -1738,6 +1739,397 @@ export interface Product {
 
 ---
 
+## 12. Phase 9: Quality Evaluation Integration (2026-01-26)
+
+> **Status**: 🆕 PLANNING
+>
+> **목표**: Quality Evaluator 프로젝트의 6개 품질 차원을 Mapiker-AI 프론트엔드의 Compare Report와 Quality Evaluation 섹션에 반영
+
+### 12.1 개요
+
+Quality Evaluator 프로젝트에서 정의한 지도 품질 평가 기준을 Compare Report UI에 통합합니다.
+
+**현재 상태:**
+- `QualityComparison.tsx`: 6개 단순 메트릭 (geocodingAccuracy, routeOptimization 등)
+- `qualityEvaluationOptions.ts`: 8개 품질 features
+
+**목표 상태:**
+- 6개 품질 차원 구조 반영
+- 개별 점수 표시 (가중 평균 X)
+- Mock 데이터로 UI 완성 → 추후 실제 API 연동
+
+---
+
+### 12.2 Quality Evaluator 6개 품질 차원
+
+| # | Dimension | Scores | Type |
+|---|-----------|--------|------|
+| 1 | **Feature Availability Matrix** | N/A | ✓/✗ 체크 매트릭스 (프로젝트별 제품 비교) |
+| 2 | **Data Coverage Matrix** | N/A | POI/Building/Road 통계 |
+| 3 | **Geocoding Accuracy** | 1개 | Score (0-100) |
+| 4 | **POI & Address Quality** | 2개 | Coverage + Position Accuracy |
+| 5 | **Building Coverage** | N/A | 통계만 (Score 없음) |
+| 6 | **Routing Quality** | 3개 | Success Rate + Efficiency + Guidance |
+
+#### Score Color Coding
+
+| Range | Label | Color |
+|-------|-------|-------|
+| 90-100 | Excellent | 🟢 #10B981 |
+| 75-89 | Good | 🔵 #2563EB |
+| 60-74 | Fair | 🟠 #F59E0B |
+| 0-59 | Poor | 🔴 #EF4444 |
+
+#### 가격 구조
+- **현재 유지**: $20/country + $10/feature (기존 구조 유지)
+
+---
+
+### 12.3 수정 파일 목록
+
+#### 신규 파일
+
+| 파일 | 설명 |
+|------|------|
+| `src/lib/qualityDimensions.ts` | 6개 차원 TypeScript 타입 정의 |
+| `src/lib/mockQualityData.ts` | Mock 데이터 생성기 (seeded random) |
+| `src/components/quality/DimensionScoreCard.tsx` | 점수 카드 컴포넌트 |
+
+#### 수정 파일
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `src/components/compare/QualityComparison.tsx` | 6개 차원 구조로 전면 리팩토링 |
+| `src/lib/featureRegistry.ts` | QUALITY_FEATURES 8개 → 6개 차원으로 변경 |
+| `src/lib/qualityEvaluationOptions.ts` | 가격 및 옵션 구조 변경 |
+| `src/lib/types.ts` | QualityComparisonData 타입 추가 |
+| `src/components/quality/FeatureSelector.tsx` | 6개 차원 표시 |
+| `src/components/quality/QualityReportPricing.tsx` | 가격 계산 로직 업데이트 |
+| `src/app/project/[id]/quality/report/page.tsx` | 리포트 설정 페이지 업데이트 |
+
+---
+
+### 12.4 핵심 타입 정의
+
+```typescript
+// qualityDimensions.ts
+
+// 3. Geocoding Accuracy
+interface GeocodingAccuracyMetrics {
+  geocodingScore: number; // 0-100
+  agreementRate: number;
+  componentCompleteness: Record<string, number>;
+  deviationDistribution: {
+    under10m: number;
+    from10to25m: number;
+    from25to50m: number;
+    from50to100m: number;
+    over100m: number;
+  };
+}
+
+// 4. POI Quality (2 Scores)
+interface POIQualityMetrics {
+  coverageScore: number;        // Score 1
+  positionAccuracyScore: number; // Score 2
+  totalSeeds: number;
+  avgDistanceM: number;
+}
+
+// 5. Building Coverage (Statistics Only)
+interface BuildingCoverageMetrics {
+  buildingCount: number;
+  totalAreaSqKm: number;
+  heightDataAvailability: number;
+  // Note: No quality score
+}
+
+// 6. Routing Quality (3 Scores)
+interface RoutingQualityMetrics {
+  successRateScore: number;    // Score 1
+  efficiencyScore: number;     // Score 2
+  guidanceAccuracyScore?: number; // Score 3 (Phase 2)
+  networkCoverage: {
+    totalRoadLengthKm: number;
+    highwayKm: number;
+    primaryKm: number;
+  };
+}
+
+// Combined Report
+interface VendorQualityReport {
+  vendor: string;
+  region: string;
+  featureAvailability: FeatureAvailabilityMatrix;
+  dataCoverage: DataCoverageMetrics;
+  geocodingAccuracy: GeocodingAccuracyMetrics;
+  poiQuality: POIQualityMetrics;
+  buildingCoverage: BuildingCoverageMetrics;
+  routingQuality: RoutingQualityMetrics;
+}
+```
+
+---
+
+### 12.5 UI 레이아웃
+
+#### Feature Availability (Product Comparison)
+
+프로젝트별 선택된 제품을 매칭하여 Feature 커버리지 비교:
+
+```
+┌─ FEATURE AVAILABILITY (Product Comparison) ─────────────┐
+│                                                          │
+│  Routing Products:                                       │
+│  ┌──────────────────┬────────────┬────────────┐         │
+│  │ Feature          │ Project A  │ Project B  │         │
+│  │                  │ Google Dir │ HERE Route │         │
+│  ├──────────────────┼────────────┼────────────┤         │
+│  │ Turn-by-turn     │     ✓      │     ✓      │         │
+│  │ Traffic-aware    │     ✓      │     ✓      │         │
+│  │ Truck Routing    │     ✗      │     ✓      │         │
+│  │ EV Routing       │     ✓      │     ✗      │         │
+│  └──────────────────┴────────────┴────────────┘         │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Quality Metrics Layout
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ QUALITY COMPARISON                                       │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│ ┌─ EXECUTIVE SUMMARY ─────────────────────────────────┐ │
+│ │  Project A: 85 (Good) | Project B: 78 (Good)        │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 1. FEATURE AVAILABILITY ───────────────────────────┐ │
+│ │  [Product Comparison Matrix - see above]             │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 2. DATA COVERAGE ──────────────────────────────────┐ │
+│ │  POI: 125,456 | Buildings: 45.2 km² | Roads: 1,234km│ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 3. GEOCODING ACCURACY ─────────────────────────────┐ │
+│ │  Score: 92.5 🟢 Excellent                            │ │
+│ │  Component Completeness: [bar chart]                 │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 4. POI & ADDRESS QUALITY (2 Scores) ───────────────┐ │
+│ │  Coverage: 89.5 🔵 Good                              │ │
+│ │  Position Accuracy: 82.3 🔵 Good                     │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 5. BUILDING COVERAGE ──────────────────────────────┐ │
+│ │  ⓘ Statistics only - no quality score               │ │
+│ │  Count: 125,456 | Area: 45.2 km² | Height: 45%      │ │
+│ └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│ ┌─ 6. ROUTING QUALITY (3 Scores) ─────────────────────┐ │
+│ │  Success Rate: 97.0 🟢 Excellent                     │ │
+│ │  Efficiency: 82.5 🔵 Good                            │ │
+│ │  Guidance: TBD (Phase 2)                             │ │
+│ └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 12.6 Mock 데이터 전략
+
+#### Seeded Random 방식
+- Project ID + Vendor + Region을 seed로 사용
+- 동일 조합은 항상 같은 값 반환 (일관성)
+
+#### Vendor별 특성 반영
+
+| Vendor | 강점 | Mock 데이터 패턴 |
+|--------|------|-----------------|
+| Google | Geocoding, POI | Geocoding 95+, POI 90+ |
+| HERE | Routing, Truck | Routing 90+, Efficiency 85+ |
+| Mapbox | Coverage (US/EU) | 지역별 차이 |
+| OSM | Building | Building count 높음 |
+
+---
+
+### 12.7 구현 순서
+
+| 순서 | 작업 | 파일 |
+|------|------|------|
+| 1 | 타입 정의 | `qualityDimensions.ts` (신규) |
+| 2 | Mock 데이터 생성기 | `mockQualityData.ts` (신규) |
+| 3 | Score 카드 컴포넌트 | `DimensionScoreCard.tsx` (신규) |
+| 4 | Quality Features 업데이트 | `featureRegistry.ts` |
+| 5 | QualityComparison 리팩토링 | `QualityComparison.tsx` |
+| 6 | 가격/옵션 업데이트 | `qualityEvaluationOptions.ts` |
+| 7 | Report 페이지 업데이트 | `report/page.tsx` |
+
+---
+
+### 12.8 검증 계획
+
+#### 테스트 시나리오
+1. Compare 페이지에서 여러 프로젝트 비교 시 6개 차원 모두 표시 확인
+2. Score 색상 코딩 확인 (90+/75+/60+/60-)
+3. Building Coverage가 "Statistics only"로 표시 확인
+4. Routing Quality의 Guidance가 "TBD (Phase 2)"로 표시 확인
+5. Mock 데이터 일관성 확인 (같은 project ID → 같은 값)
+6. PDF Export에 6개 차원 모두 포함 확인
+
+#### URL
+- Compare: `http://localhost:3000/compare?projects=id1,id2`
+- Quality Report: `http://localhost:3000/project/{id}/quality/report`
+
+---
+
+### 12.9 향후 API 연동 준비
+
+```typescript
+// qualityService.ts
+export async function getQualityReport(
+  projectId: string,
+  vendors: string[],
+  region: string
+): Promise<QualityComparisonData> {
+  // Feature flag로 실제 API vs Mock 전환
+  if (process.env.NEXT_PUBLIC_QUALITY_API_ENABLED === 'true') {
+    return fetchFromQualityEvaluatorAPI(projectId, vendors, region);
+  }
+  return generateMockComparisonData(projectId, vendors, region);
+}
+```
+
+---
+
+### 12.10 참조 문서
+
+- **Quality Evaluator 프로젝트**: `/Users/bokyungchoi/.../Mapiker-AI-Quality-Evaluator`
+- **설계 문서**: `Quality-Evaluator/docs/02-design/`
+- **데이터 모델**: `Quality-Evaluator/docs/02-design/data-models.md`
+
+---
+
+### 12.11 Phase 9.1: Quality Comparison UI/UX Fixes (2026-01-26)
+
+> **Status**: ✅ COMPLETE (2026-01-26)
+>
+> **Issues Resolved:**
+> 1. 어두운 배경 카드 → 라이트 테마 (Notion-like) 적용
+> 2. 메트릭 설명 부족 → 툴팁 아이콘 + hover 설명 추가
+> 3. "+" 접미사 혼란 → winner 표시 완전 제거
+> 4. Mock 데이터 편향 → 균형 잡힌 점수 생성 로직 적용
+
+#### Issue 1: 라이트 테마 적용
+
+**문제:**
+- `dark:bg-gray-800`, `dark:text-gray-100` 등 다크 테마 클래스가 앱의 Notion-like 라이트 테마와 불일치
+
+**해결:**
+- 모든 `dark:` prefixed 클래스 제거
+- Notion-like 색상 팔레트 적용:
+  - 배경: `bg-white`, `bg-[#f7f6f3]`
+  - 테두리: `border-[#e9e9e7]`
+  - 텍스트 Primary: `text-[#37352f]`
+  - 텍스트 Secondary: `text-[#787774]`, `text-[#9b9a97]`
+
+**수정 파일:**
+- `DimensionScoreCard.tsx` - 모든 컴포넌트 스타일 변경
+- `QualityComparison.tsx` - Executive Summary, Feature Matrix, 경고 배너
+
+#### Issue 2: 메트릭 설명 툴팁
+
+**문제:**
+- "Success Rate", "Efficiency" 등 단어가 너무 일반적이어서 의미 불명확
+
+**해결:**
+```typescript
+// qualityDimensions.ts
+export const METRIC_TOOLTIPS: Record<string, string> = {
+  geocoding_score: "Accuracy of converting addresses to GPS coordinates...",
+  coverage_score: "Completeness of the POI database...",
+  position_accuracy: "Precision of POI coordinates...",
+  success_rate: "Percentage of route calculations completed successfully...",
+  efficiency: "Route optimization quality...",
+  // ...
+};
+
+// DimensionScoreCard.tsx
+export function MetricWithTooltip({ label, tooltipKey, tooltip }) {
+  return (
+    <div className="flex items-center gap-1">
+      <span>{label}</span>
+      <div className="group relative">
+        <QuestionMarkCircleIcon className="w-3.5 h-3.5 text-[#9b9a97] cursor-help" />
+        <div className="absolute bottom-full hidden group-hover:block z-20 w-64">
+          <div className="bg-[#37352f] text-white text-xs rounded-lg px-3 py-2">
+            {tooltipText}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+#### Issue 3: "+" 접미사 제거
+
+**문제:**
+- `ComparisonScoreRow`에서 winner에게 "+"를 붙여 "93.3+"처럼 표시 → 의미 불명확
+
+**해결:**
+```typescript
+// 기존 코드 제거
+{winner === 'A' && (
+  <span className="text-green-500 text-xs">+</span>
+)}
+```
+
+#### Issue 4: 균형 잡힌 Mock 데이터
+
+**문제:**
+- `VENDOR_PATTERNS`가 Google에 항상 높은 범위 설정
+- 두 프로젝트 비교 시 Google 제품이 항상 승리
+
+**해결:**
+```typescript
+// mockQualityData.ts
+function generateBalancedScore(
+  rng: () => number,
+  basePattern: VendorScorePattern,
+  projectSeed: string,
+  metricType: MetricType,
+  projectIndex: number
+): number {
+  // Project seed의 hash와 metric type 조합으로 강점 영역 결정
+  const hash = calculateHash(projectSeed);
+  const metricHash = metricType.length + metricType.charCodeAt(0);
+  const isStrength = ((hash + metricHash + projectIndex) % 3) !== 0;
+
+  // 강점: 82-96, 약점: 68-85 (겹치는 범위로 자연스러움)
+  const min = isStrength ? 82 : 68;
+  const max = isStrength ? 96 : 85;
+
+  return randomInRange(rng, min, max);
+}
+```
+
+**효과:**
+- 같은 프로젝트 조합은 항상 같은 결과 (seeded random)
+- 각 메트릭별로 승자가 교차 (한 프로젝트가 모든 영역 독점 X)
+
+**수정 파일:**
+
+| 파일 | 변경 내용 |
+|------|----------|
+| `src/lib/qualityDimensions.ts` | `METRIC_TOOLTIPS` 상수 추가 |
+| `src/components/quality/DimensionScoreCard.tsx` | 라이트 테마 스타일, `MetricWithTooltip` 컴포넌트, "+" 제거 |
+| `src/components/compare/QualityComparison.tsx` | 라이트 테마 적용 (Executive Summary, Feature Matrix, 경고) |
+| `src/lib/mockQualityData.ts` | `generateBalancedScore()` 함수, projectIndex 파라미터 추가 |
+
+---
+
 ## Version History
 
 | Version | Date | Changes | Author |
@@ -1748,3 +2140,5 @@ export interface Product {
 | 1.3 | 2026-01-22 | Phase 5 안전장치 추가: use_case_relevance 임계값으로 무관 제품(Weather, Solar 등) 제외 | Claude Code |
 | 1.4 | 2026-01-22 | Phase 8 추가: key_features → features 마이그레이션 계획 (6개 백엔드 파일 + 프론트엔드 수정) | Claude Code |
 | 1.5 | 2026-01-25 | Phase 5.3-5.4 완료: Mobile SDK 표시 (feature_registry 매핑 수정), Select All 버튼 environment 파라미터, Map Display required 플래그 충돌 해결 | Claude Code |
+| 1.6 | 2026-01-26 | Phase 9 추가: Quality Evaluation Integration - Quality Evaluator 6개 품질 차원 통합 계획 | Claude Code |
+| 1.7 | 2026-01-26 | Phase 9.1 완료: Quality Comparison UI/UX Fixes - 라이트 테마, 메트릭 툴팁, "+" 제거, 균형 Mock 데이터 | Claude Code |
