@@ -1,6 +1,6 @@
 # Mapiker-AI Documentation Index
 
-> **Last Updated**: 2026-01-22
+> **Last Updated**: 2026-01-28
 > **Project Level**: Dynamic
 
 ---
@@ -86,6 +86,9 @@ docs/
 
 | Date | Feature | Phase | Description |
 |------|---------|-------|-------------|
+| 2026-01-28 | cloud-run-deployment | Complete | Frontend/Backend Cloud Run 배포 완료, cloudbuild.yaml 생성 |
+| 2026-01-28 | ui-bugfixes | Complete | Products 페이지 중복 Navbar 수정, Fleet Management 데모 route 추가 |
+| 2026-01-28 | quality-comparison | Do | Quality Comparison UI 컴포넌트 추가 (DimensionScoreCard, mockQualityData) |
 | 2026-01-22 | feature-keyword-sync | Complete | Feature Registry 통합 완료, google.genai 마이그레이션 |
 | 2026-01-22 | chatbot-improvements | Plan | 세일즈 연결, 대화 흐름 개선 계획 |
 | 2026-01-22 | product-recommendation | Design | FeatureDetail 마이그레이션 완료 |
